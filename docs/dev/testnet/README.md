@@ -1,6 +1,6 @@
-# About the testnet
+# О тестнете
 
-## Table of contents
+## Содержание
 
 - [Попробуйте!](./user.md)
 - [Важные ссылки](./important-links.md)
