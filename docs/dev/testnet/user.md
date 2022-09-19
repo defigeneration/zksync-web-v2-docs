@@ -1,9 +1,9 @@
-# Try it out!
+# Попробуйте!
 
-To get a first-hand impression of the zkSync 2.0 user experience:
+Чтобы получить представление о пользовательском опыте zkSync 2.0:
 
-- Go to the [zkSync 2.0 Portal](https://portal.zksync.io).
-- Get some test tokens from the faucet, or deposit some from Ethereum's Görli testnet.
-- Make some transfers.
+- Перейдите по ссылке [zkSync 2.0 Portal.](https://portal.zksync.io/)
+- Получите немного токенов из крана, или переведите их себе с Ethereum Görli testnet.
+- Проведите несколько транзакций.
 
-The Portal is the central entry point into the zkSync 2.0 ecosystem for users and developers alike. It contains links to all relevant resources, such as block explorer or the catalog of featured dapps.
+Портал является центральной точкой входа в экосистему zkSync 2.0 как для пользователей, так и для разработчиков. Он содержит ссылки на все релевантные ресурсы, такие как обозреватель блоков или каталог приложений.
