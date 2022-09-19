@@ -1,18 +1,18 @@
-# Tutorial: Account abstraction
+# Руководство: абстракция аккаунта
 
-Now, let's learn how to deploy your custom accounts and interact directly with the [ContractDeployer](../zksync-v2/system-contracts.md#contractdeployer) system contract.
+Теперь давайте научимся реализовывать кастомные аккаунты и взаимодействовать напрямую с системным контрактов [ContractDeployer](../zksync-v2/system-contracts.md#contractdeployer).
 
-In this tutorial we build a factory that deploys 2-of-2 multisig accounts.
+В этом руководстве мы создадим фабрику (factory), которая развертывает аккаунты с мультиподписью типа "2-из-2ух".
 
-## Preliminaries
+## Подготовка
 
-It is highly recommended to read about the [design](../zksync-v2/aa.md) of the account abstraction protocol before diving into this tutorial.
+IПрежде чем углубиться в данное руководство, крайне рекомендуется прочитать [дизайне](../zksync-v2/aa.md) протокола абстракции аккаунта.
 
-It is assumed that you are already familiar with deploying smart contracts on zkSync. If not, please refer to the first section of the [Hello World](./hello-world.md) tutorial. It is also recommended to read the [introduction](../zksync-v2/system-contracts.md) to the system contracts.
+редполагается, что вы уже знакомы с развертыванием контрактов на zkSync. Если нет, пожалуйста обратитесь к первому разделу руководства [Hello World](./hello-world.md). Также рекомендуется прочесть [введение](../zksync-v2/system-contracts.md) в системные контракты.
 
-## Installing dependencies
+## Установка зависимостей
 
-We will use the zkSync hardhat plugin for developing this contract. Firstly, we should install all the dependencies for it:
+Мы будет использоваться hardhat плагин zkSync для разработки этого контракта. Во-первых, нам нужно установить все зависимости для него:
 
 ```
 mkdir custom-aa-tutorial
@@ -21,19 +21,19 @@ yarn init -y
 yarn add -D typescript ts-node ethers zksync-web3 hardhat @matterlabs/hardhat-zksync-solc @matterlabs/hardhat-zksync-deploy
 ```
 
-Since we are working with zkSync contracts, we also need to install the package with the contracts and its peer dependencies:
+Так как мы работаем с контрактами zkSync, нам также нужно установить пакет с контрактами и необходимые зависимости:
 
 ```
 yarn add @matterlabs/zksync-contracts @openzeppelin/contracts @openzeppelin/contracts-upgradeable
 ```
 
-Also, create the `hardhat.config.ts` config file, `contracts` and `deploy` folders, like in the [Hello World](./hello-world.md) tutorial.
+Также создайте файл конфигурации `hardhat.config.ts`, директории `contracts` и `deploy` как в руководстве [Hello World](./hello-world.md).
 
-## Account abstraction
+## Абстракция аккаунта
 
-Each account needs to implement the [IAccount](https://github.com/matter-labs/v2-testnet-contracts/blob/07e05084cdbc907387c873c2a2bd3427fe4fe6ad/l2/system-contracts/interfaces/IAccount.sol#L7) interface. Since we are building an account with signers, we should also have [EIP1271](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/83277ff916ac4f58fec072b8f28a252c1245c2f1/contracts/interfaces/IERC1271.sol#L12) implemented.
+Каждый аккаунт должен реализовывать интерфейс [IAccount](https://github.com/matter-labs/v2-testnet-contracts/blob/07e05084cdbc907387c873c2a2bd3427fe4fe6ad/l2/system-contracts/interfaces/IAccount.sol#L7). Так как мы делаем аккаунт с мультиподписью, нам также нужно реализовать[EIP1271](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/83277ff916ac4f58fec072b8f28a252c1245c2f1/contracts/interfaces/IERC1271.sol#L12).
 
-The skeleton for the contract will look the following way:
+Скелет контракта будет выглядеть следующим образом:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -96,21 +96,21 @@ contract TwoUserMultisig is IAccount, IERC1271 {
 }
 ```
 
-Note, that only the [bootloader](../zksync-v2/system-contracts.md#bootloader) should be allowed to call the `validateTransaction`/`executeTransaction`/`payForTransaction`/`prePaymaster` methods. That's why the `onlyBootloader` modifier is used for them.
+Учтите, что только [bootloader](../zksync-v2/system-contracts.md#bootloader) должен быть допущен к вызову методов `validateTransaction`/`executeTransaction`/`payForTransaction`/`prePaymaster`. Поэтому для них используется модификатор `onlyBootloader`.
 
-The `executeTransactionFromOutside` is needed to allow external users to initiate transactions from this account. The easiest way to implement it is to do the same as `validateTransaction` + `executeTransaction` would do.
+Метод `executeTransactionFromOutside` нужен для доступа внешним пользователям к инициации транзакции с данного аккаунта. Наиболее легий способ реализовать его - сделать тоже самое, что бы сделали `validateTransaction` + `executeTransaction`.
 
-### Signature validation
+### Валидация подписи
 
-Firstly, we need to implement the signature validation process. Since we are building a two-account multisig, let's pass its owners' addresses in the constructor. In this tutorial, we use the OpenZeppelin's `ECDSA` library for signature validation.
+Во-первых, нам нужно реализовать процесс валидации подписи. Так как мы создаем мультиподпись из двух аккаунтов, давайте передадим адреса его владельцев в конструктор. В этом руководстве мы используем библиотеку ECDSA от OpenZeppelin для валидации подписи.
 
-Add the following import:
+Добавьте следующий импорт:
 
 ```solidity
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 ```
 
-Also, add the constructor to the contract:
+Также добавьте конструктор в контракт:
 
 ```solidity
 address public owner1;
@@ -122,7 +122,7 @@ constructor(address _owner1, address _owner2) {
 }
 ```
 
-And then we can implement the `isValidSignature` method in the following way:
+Затем мы можем реализовать метод `isValidSignature` следующим образом:
 
 ```solidity
 function isValidSignature(bytes32 _hash, bytes calldata _signature) public override view returns (bytes4) {
@@ -140,27 +140,27 @@ function isValidSignature(bytes32 _hash, bytes calldata _signature) public overr
 }
 ```
 
-### Transaction validation
+### Валидация транзакции
 
-Let's implement the validation process. It is responsible for validating the signature of the transaction and incrementing the nonce. Note, that there are some limitations on what this method is allowed to do. You can read more about them [here](../zksync-v2/aa.md#limitations-of-the-verification-step).
+Давайте реализуем процесс валидации. Он отвечает за валидацию подписи транзакции и увеличение значения nonce. Заметьте, что есть некоторые ограничения в том, что этому методу позволено выполнять. Вы можете подробнее  узнать о них [тут](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#limitations-of-the-verification-step)
 
-To increment the nonce, you should use the `incrementNonceIfEquals` method of the `NONCE_HOLDER_SYSTEM_CONTRACT` system contract. It takes the nonce of the transaction and checks whether the nonce is the same as the provided one. If not, the transaction reverts. Otherwise, the nonce is increased.
+Для увеличения nonce нужно использовать метод `incrementNonceIfEquals` системного контракта `NONCE_HOLDER_SYSTEM_CONTRACT` . Он берет Nonce транзакции и проверяет, совпадает ли текущий nonce с предоставленным. Если нет, то транзакция отменяется. В ином случае, nonce увеличивается.
 
-Even though the requirements above allow the accounts to touch only their storage slots, accessing your nonce in the `NONCE_HOLDER_SYSTEM_CONTRACT` is a [whitelisted](../zksync-v2/aa.md#extending-the-set-of-slots-that-belong-to-a-user) case, since it behaves in the same way as your storage, it just happened to be in another contract. To call the `NONCE_HOLDER_SYSTEM_CONTRACT`, you should add the following import:
+Хоть и требования выше позволяют аккаунтам изменять только свои слоты хранилища, доступ к вашему nonce в `ONCE_HOLDER_SYSTEM_CONTRACT` - это [разрешенный](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#extending-the-set-of-slots-that-belong-to-a-user) случай, так как он ведет себя так же, как ваше хранилище, но просто случилось так, что он находится в другом контракте. Для вызова `NONCE_HOLDER_SYSTEM_CONTRACT` вам нужно добавить следующий импорт:
 
 ```solidity
 import '@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol';
 ```
 
-The `TransactionHelper` library (already imported in the example above) can be used to get the hash of the transaction that should be signed. You can also implement your own signature scheme and use a different commitment for the transaction to sign, but in this example we use the hash provided by this library.
+Библиотека `TransactionHelper`  (уже импортированная в примере выше) может использоваться для получения хэша транзакции, которую нужно подписать. Вы также можете реализовать свою собственную схему подписи и использовать иное обязательство (commitment) для подписи транзакции, но в этом примере мы испольщуем хэш, предоставленный этой библиотекой.
 
-Using the `TransactionHelper` library:
+Использование библиотеки `TransactionHelper` :
 
 ```solidity
 using TransactionHelper for Transaction;
 ```
 
-Now we can implement the `_validateTransaction` method:
+Теперь мы можем реализовать метод `_validateTransaction` :
 
 ```solidity
 function _validateTransaction(Transaction calldata _transaction) internal {
@@ -173,9 +173,9 @@ function _validateTransaction(Transaction calldata _transaction) internal {
 }
 ```
 
-### Paying fees for the transaction
+### Оплата комиссий за транзакцию
 
-We should now implement the `payForTransaction` method. The `TransactionHelper` library already provides us with the `payToTheBootloader` method, that sends `_transaction.maxFeePerErg * _transaction.ergsLimit` ETH to the bootloader. So the implementation is rather straightforward:
+Теперь нам нужно реализовать метод `payForTransaction` . Библиотека `TransactionHelper`уже предоставляет нам `payToTheBootloader` ,  который отправляет`_transaction.maxFeePerErg * _transaction.ergsLimit` ETH в пользу bootloader. Таким образом, реализация относительно прямолинейна:
 
 ```solidity
 function payForTransaction(Transaction calldata _transaction) external payable override onlyBootloader {
@@ -184,9 +184,9 @@ function payForTransaction(Transaction calldata _transaction) external payable o
 }
 ```
 
-### Implementing `prePaymaster`
+### Реализация `prePaymaster`
 
-While generally the account abstraction protocol enables performing arbitrary actions when interacting with the paymasters, there are some [common patterns](../zksync-v2/aa.md#built-in-paymaster-flows) with the built-in support from EOAs. Unless you want to implement or restrict some specific paymaster use-cases from your account, it is better to keep it consistent with EOAs. The `TransactionHelper` library provides the `processPaymasterInput` which does exactly that: processed the `prePaymaster` step the same as EOA does.
+Тогда как обычно протокол абстракции аккаунта позволяет исполнять произвольные действия при взаимодействии с paymaster'ами, есть несколько [общих паттернов](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#built-in-paymaster-flows) со встроенной поддержкой из EOA-аккаунтов. Если только вы не хотите реализовать или запретить некоторые специфические возможные действия для вашего аккаунта, лучше держать его в соответствии с EOA. Библиотека `TransactionHelper` предоставляет метод `processPaymasterInput` , который делает именно это: проходит шаг `prePaymaster` так же, как и EOA.
 
 ```solidity
 function prePaymaster(Transaction calldata _transaction) external payable override onlyBootloader {
@@ -194,9 +194,9 @@ function prePaymaster(Transaction calldata _transaction) external payable overri
 }
 ```
 
-### Transaction execution
+### Исполнение транзакции
 
-The most basic implementation of the transaction execution is quite straightforward:
+Самая базовая реализация исполнения транзакции довольно проста:
 
 ```solidity
 function _executeTransaction(Transaction calldata _transaction) internal {
@@ -215,9 +215,9 @@ function _executeTransaction(Transaction calldata _transaction) internal {
 }
 ```
 
-Note, that whether the operator will consider the transaction successful will depend only on whether the call to `executeTransactions` was successful. Therefore, it is highly recommended to put `require(success)` for the transaction, so that users get the best UX.
+Стоит отметить то, сочтет ли оператор транзакцию успешной зависит только от того, был ли вызов `executeTransactions` успешным. Так что, крайне рекомендуется использовать `require(success)` для транзакции, чтобы пользователи получали наилучший опыт.
 
-### Full code of the account
+### Полный код аккаунта
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -319,11 +319,11 @@ contract TwoUserMultisig is IAccount, IERC1271 {
 }
 ```
 
-## The factory
+## Фабрика (factory)
 
-Now, let's build a factory that can deploy these accounts. Note, that if we want to deploy AA, we need to interact directly with the `DEPLOYER_SYSTEM_CONTRACT`. For deterministic addresses, we will use `create2Account` method.
+Теперь давайте создадим фабрику, которая может развертывать такие аккаунты. Заметьте, что если вы хотите развернуть АА (абстрагированный аккаунт), то нужно взаимодействовать напрямую с `DEPLOYER_SYSTEM_CONTRACT`. Для детерминированных адресов, мы будет использовать метод `create2Account`.
 
-The code will look the following way:
+Код будет выглядеть так:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -346,16 +346,16 @@ contract AAFactory {
 }
 ```
 
-Note, that on zkSync, the deployment is not done via bytecode, but via bytecode hash. The bytecode itself is passed to the operator via `factoryDeps` field. Note, that the `_aaBytecodeHash` must be formed in a special way:
+Отметим, что на zkSync развертывание происходит не через байт-код, а через хэш байт-кода. Сам байт-код передается оператору через поле `factoryDeps` . Учтите, что`_aaBytecodeHash` должен быть сформирован особым образом:
 
-- Firstly, it is hashed with sha256.
-- Then, the first two bytes are replaced with the length of the bytecode in 32-byte words.
+- Во-первых, он хешируется в виде sha256.
+- Затем, первые два байта заменяются длиной байт-кода в 32-байтовых словах.
 
-You don't need to worry about it, since our SDK provides a built-in method to do it, explained below.
+Вам не нужно об этом беспокоиться, наш SDK предоставляет встроенный метод, объясним далее.
 
-## Deploying the factory
+## Развертывание фабрики
 
-To deploy a factory, we need to create a deployment script. Create the `deploy` folder and create one file there: `deploy-factory.ts`. Put the following deployment script there:
+Для развертывания фабрики там нужно создать скрипт развертывания. Создайте директорию `deploy` и создайте в нем один файл: `deploy-factory.ts`. Вставьте в него следующий скрипт развертывания:
 
 ```ts
 import { utils, Wallet } from "zksync-web3";
@@ -392,30 +392,30 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 }
 ```
 
-In order to deploy the factory, you should compile the contracts and run the script:
+Чтобы развернуть фабрику, вам нужно скомпилировать контракты и запустить скрипт:
 
 ```
 yarn hardhat compile
 yarn hardhat deploy-zksync --script deploy-factory.ts
 ```
 
-The output should be roughly the following:
+Вывод должен быть примерно таким:
 
 ```
 AA factory address: 0x9db333Cb68Fb6D317E3E415269a5b9bE7c72627Ds
 ```
 
-Note that the address will be different for each run.
+Отметим, что адрес будет разным после каждого исполнения.
 
-## Working with accounts
+## Работа с аккаунтами
 
-### Deploying an account
+### Развертывание аккаунта
 
-Now, let's deploy an account and initiate a new transaction with it. In this section we assume that you already have an EOA account with enough funds on zkSync.
+Теперь давайте развернем аккаунт и инициируем новую транзакцию с него. В этом разделе мы предполагаем, что у вас уже есть ЕОА-аккаунт на zkSync с достаточным количеством средств.
 
-In the `deploy` folder create a file `deploy-multisig.ts`, where we will put the script.
+В директории `deploy` создайте файл `deploy-multisig.ts`, в который мы поместим скрипт.
 
-Firstly, let's deploy the AA. This will be basically a call to the `deployAccount` function:
+Сначала давайте развернем АА. По факту, это будет вызов функции `deployAccount` :
 
 ```ts
 import { utils, Wallet, Provider, EIP712Signer, types } from "zksync-web3";
@@ -455,11 +455,11 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 }
 ```
 
-_Note, that zkSync has different address derivation rules from Ethereum_. You should always use the `createAddress` and `create2Address` utility methods of the `zksync-web3` SDK.
+_Заметьте, что правила извлечения адреса на zkSync отличаются от Эфириума._ Вам всегда нужно использовать утилитарные методы `createAddress` и  `create2Address`  из `zksync-web3` SDK.
 
-### Starting a transaction from this account
+### Инициация транзакции с этого аккаунта
 
-Before the deployed account can do any transactions, we need to top it up:
+Прежде чем развернутый аккаунт сможет отправлять какие-либо транзакции, его нужно пополнить:
 
 ```ts
 await(
@@ -470,13 +470,13 @@ await(
 ).wait();
 ```
 
-Now, as an example, let's try to deploy a new multisig, but the initiator of the transaction will be our deployed account from the previous part:
+Теперь, как пример, давайте попробуем развернуть новый аккаунт с мультиподписью (мультисиг), но инициатором транзакции будет наш уже развернутый аккаунт из предыдущей части:
 
 ```ts
 let aaTx = await aaFactory.populateTransaction.deployAccount(salt, Wallet.createRandom().address, Wallet.createRandom().address);
 ```
 
-Then, we need to fill all the transaction's fields:
+Затем нам нужно заполнить все поля транзакции:
 
 ```ts
 const gasLimit = await provider.estimateGas(aaTx);
@@ -498,13 +498,13 @@ aaTx = {
 };
 ```
 
-::: tip Note on gasLimit
+::: tip Заметка по `gasLimit`
 
-Currently, we expect the `gasLimit` to cover both the verification and the execution steps. Currently, the number of ergs that is returned by the `estimateGas` is `execution_ergs + 20000`, where `20000` is roughly equals to the overhead needed for the defaultAA to have both fee charged and the signature verified. In case your AA has very expensive verification step, you should add some constant to the `gasLimit`.
+На даннйы момент мы ожидаем, что `gasLimit` должен покрывать и шаг верификации и шаг исполнения. Сейчас число ergs, возвращаемое функцией `estimateGas` равно `execution_ergs + 20000`, где `20000` примерно равны накладным расходам defaultAA, необходимым для взимания комиссии и проверки подписи. В случае, если ваш АА имеет очень дорогой шаг верификации, вам стоит добавит константу в `gasLimit`.
 
 :::
 
-Then, we need to sign the transaction and provide the `aaParamas` in the customData of the transaction:
+Затем нам нужно подписать транзакцию и предоставить `aaParamas` в `customData` транзакции:
 
 ```ts
 const signedTxHash = EIP712Signer.getSignedDigest(aaTx);
@@ -522,7 +522,7 @@ aaTx.customData = {
 };
 ```
 
-Now, we are ready to send the transaction:
+Теперь мы готовы к отправке транзакции:
 
 ```ts
 console.log(`The multisig's nonce before the first tx is ${await provider.getTransactionCount(multisigAddress)}`);
@@ -533,7 +533,7 @@ await sentTx.wait();
 console.log(`The multisig's nonce after the first tx is ${await provider.getTransactionCount(multisigAddress)}`);
 ```
 
-### Full example
+### Полный пример
 
 ```ts
 import { utils, Wallet, Provider, EIP712Signer, types } from "zksync-web3";
@@ -617,13 +617,13 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 }
 ```
 
-To run the script, use the following command:
+Для запуска скрипта используйте следующую команду:
 
 ```
 yarn hardhat deploy-zksync --script deploy-multisig.ts
 ```
 
-The output should be roughly the following:
+Вывод должен быть примерно следующим:
 
 ```
 Multisig deployed on address 0xCEBc59558938bccb43A6C94769F87bBdb770E956
@@ -631,12 +631,12 @@ The multisig's nonce before the first tx is 0
 The multisig's nonce after the first tx is 1
 ```
 
-## Complete project
+## Полный проект
 
-You can download the complete project [here](https://github.com/matter-labs/custom-aa-tutorial).
+Вы можете скачать полный проект [тут.](https://github.com/matter-labs/custom-aa-tutorial)
 
-## Learn more
+## Узнать больше
 
-- To learn more about account abstraction on zkSync, check out its [documentation page](../zksync-v2/aa.md).
-- To learn more about the `zksync-web3` SDK, check out its [documentation page](../../api/js).
-- To learn more about the zkSync hardhat plugins, check out their [documentation page](../../api/hardhat).
+- Узнать больше об абстракции аккаунта на zkSync можно на этой [странице документации](../zksync-v2/aa.md).
+- Узнать больше о `zksync-web3` SDK можно на этой странице [документации](https://v2-docs.zksync.io/api/js).
+- Узнать больше о hardhat плагинах zkSync можно на этой странице [документации](https://v2-docs.zksync.io/api/hardhat).
