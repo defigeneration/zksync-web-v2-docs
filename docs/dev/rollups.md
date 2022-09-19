@@ -1,33 +1,33 @@
-# ZK Rollup Basics
+# Основы ZK Rollups
 
-This page aims to introduce developers to the basic concepts behind zkSync, including topics ranging from the basics of ZK rollups, L1 and L2 chains, and key differences in developing using zkSync over other scaling solutions.
+Эта страница призвана познакомить разработчиков с основными концепциями zkSync, такими как основы ZK rollup, L1 и L2 cети, ключевые различия в разработке с использованием zkSync по сравнению с другими решениями масштабирования и др.
 
-## What are ZK rollups?
+## Что такое ZK rollups?
 
-ZK rollups ('ZK' standing for zero-knowledge) are a recent development intended to increase the scalability of Ethereum by performing calculations off-chain, rolling many transactions up into a single batch, and sending it to the main Ethereum chain for verification in a single action. In zkSync, this is done via a **SNARK** (succinct non-interactive argument of knowledge), a cryptographic proof that performs the validation of transactions in the batch.
+ZK rollups ('ZK' значит zero-knowledge) - это недавняя разработка, предназначенная для увеличения масштабируемости Ethereum путем выполнения расчетов вне блокчейна, сбора множества транзакции в один пакет, и отправки его (пакета) в основную цепь Эфириума для подтверждения - все в одном действии. В zkSync это делается через **SNARK** (succinct non-interactive argument of knowledge - _краткий неинтерактивный аргумент знания_) - криптографическое доказательство, которое выполняет проверку транзакций в пакете.
 
-With ZK rollups, funds are locked on a smart contract in the layer 1 blockchain. This allows transactions to be processed without the overhead of all the data typically associated with performing a transaction on the main chain, only requiring a **validity proof** to reach transaction finality. This significantly decreases associated transaction processing times and gas fees.
+При использовании ZK Rollups средства блокируются в смарт-контракте на блокчейне 1 уровня (L1).  Это позволяет обрабатывать транзакции без накладных расходов на все данные, обычно связанные с выполнением транзакции в основной сети, требуя только **доказательства действительности (validity proof)** для достижения завершения транзакции. Это значительно сокращает время обработки операций и сборы за газ.
 
-## L1 and L2: what's the difference?
+### L1 и L2: какая разница между ними?
 
-In decentralised ecosystems, the term **layer 1** (or **L1**) is used to refer to the underlying primary chain architecture, such as the Ethereum network or Bitcoin. Layer 1 blockchains determine protocol rules and transaction finality, and perform the base-level functions of applications built upon them.
+В децентрализованных экосистемах термин уровень 1 (или L1) используется для обозначения базовой архитектуры первичной сети, такой как сеть Ethereum или Bitcoin. Блокчейн уровня 1 определяет правила протокола и финальность транзакций, а также выполняет базовые функции приложений, построенных на нем.
 
-**Layer 2** (or **L2**) is used to describe an overlaying application or network that operates on top of the layer 1 chain. These are most often built to provide further scalability solutions by taking on a portion of transaction-based tasks to lighten the impact on the layer-1 chain, quickening transaction times and lowering gas fees.
+Термин уровень 2 (или L2) используется для описания накладываемого приложения или сети, которая работает поверх сети уровня 1. Они чаще всего создаются для того, чтобы обеспечить дополнительные масштабируемые решения, принимая на себя часть транзакционных задач, чтобы облегчить воздействие на блокчейн 1-го уровня, ускоряя время транзакций и снижая газовые сборы.
 
-In the case of zkSync, the main Ethereum blockchain is L1, and the zkSync network is L2.
+В случае zkSync, основным блокчейном L1 является Ethereum, а сеть zkSync - это L2.
 
-## How does transaction finality work?
+## Как работает окончательность\финальность транзакций?
 
-In the context of blockchain technology, **transaction finality** refers to the guarantee that transactions cannot be reverted, altered or mutated.
+В контексте технологии блокчейн, **финальность транзакции** значит, что они (транзакции) не могут быть отменены или изменены.
 
-On Ethereum, as in Bitcoin, finality is probabilistic, i.e. the more blocks that passed since the transaction was processed, the lesser the chance that this transaction will be reverted.
+В Эфириуме, как и в Биткоине, финальность вероятностна, т.е. чем больше блоков прошло с момента обработки транзакции, тем меньше шансов, что эта транзакция будет отменена.
 
-In ZK rollups, once a block has been filled and sealed, its state is committed to the main Ethereum chain. The proving step is then initiated, and a SNARK validity proof is generated for all the block transactions. Once completed, the SNARK is submitted for verification on the L1 smart contract, and after being verified, the transaction state becomes final.
+В ZK Rollups как только блок  заполняется и запечатывается, его состояние привязывается к основной сети Эфириума. Затем инициируется этап доказывания, и для всех транзакций внутри блока генерируется доказательство действительности SNARK. По завершении, SNARK используется для проверки по смарт-контракту на L1, и после проверки состояние транзакции становится финальным.
 
-Note that _finality_ from the zkSync perspective happens when the transaction (the SNARK verification) is processed by L1. At this stage, the guarantees are exactly like any other L1 transaction within the same L1 block; the more L1 blocks that generated after the initial block is processed, the lesser the chance that this transaction will be reverted.
+Обратите внимание, что финальность с точки зрения zkSync происходит, когда транзакция (проверка SNARK) проведена на L1. На этом этапе гарантии финальности точно такие же, как и для любой другая транзакция на L1 в рамках того же блока L1; чем больше блоков L1 генерируется после обработки данного блока, тем меньше шансов, что эта транзакция будет отменена.
 
-At the moment, when a user sends a transaction, zkSync waits for the entire block to be filled, meaning finality time may take longer depending on the volume of transactions being submitted via zkSync. As throughput increases, the finality time will subsequently decrease.
+В данный момент, когда пользователь отправляет транзакцию, zkSync ожидает, пока весь блок не будет заполнен, что означает, что время финальности может быть больше и зависит от объема транзакций, отправленных через zkSync. По мере увеличения пропускной способности время финальности значительно уменьшится.
 
-## What are operators?
+## Что такое Операторы?
 
-**Operators** are the actors that perform basic ZK rollup functionalities. They are charged with creating blocks, bundling the transactions, performing the calculations and submitting the data to the main Ethereum chain for verification.
+**Операторы** являются субъектами, которые выполняют основные функции ZK Rollups. Они отвечают за создание блоков, объединение транзакций, выполнение расчетов и представление данных в основную сеть Эфириума для подтверждения.
