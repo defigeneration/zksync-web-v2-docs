@@ -1,34 +1,34 @@
-# Understanding system contracts
+# Понимание системных контрактов
 
-In order to keep the zero-knowledge circuits as simple as possible and enable simple extensions, a large chunk of the logic of zkSync was moved to the so called "system contracts" -- a set of contracts that have special priviliges and serve special purposes, e.g. deployment of contracts, making sure that the user pays only once for publishing contracts' calldata, etc.
+Для того чтобы схемы zero-knowledge были максимально простыми и позволяли легко расширять их, большая часть логики zkSync была перенесена в так называемые "системные контракты" - набор контрактов, которые имеют особые привилегии и служат особым целям, например, развертывание контрактов, обеспечение того, чтобы пользователь платил только один раз за публикацию данных о контрактах и т.п.
 
-Until the code for the system contracts has gone thorough testing, the code for all the system contracts will not be public. This section will only provide you with the knowledge needed to build on zkSync.
+До тех пор, пока код системных контрактов не пройдет тщательное тестирование, он не будет опубликован. Этот раздел только предоставит вам информацию, необходимую для разработки на zkSync.
 
-## Interfaces
+## Интерфейсы
 
-The addresses and the interfaces of the system contracts can be found [here](https://github.com/matter-labs/v2-testnet-contracts/blob/8de367778f3b7ed7e47ee8233c46c7fe046a75a3/l2/system-contracts/Constants.sol).
+Адреса и интерфейсы системных контрактов могут быть найдены [тут.](https://github.com/matter-labs/v2-testnet-contracts/blob/main/l2/system-contracts/Constants.sol)
 
-This section will describe semantic meaning of some of the most popular system contracts.
+Этот раздел посвящен описанию семантического значения нескольких наиболее популярных системных контрактов.
 
 ## ContractDeployer
 
-[Interface](https://github.com/matter-labs/v2-testnet-contracts/blob/8de367778f3b7ed7e47ee8233c46c7fe046a75a3/l2/system-contracts/interfaces/IContractDeployer.sol#L5)
+[Интерфейс](https://github.com/matter-labs/v2-testnet-contracts/blob/6a93ff85d33dfff0008624eb9777d5a07a26c55d/l2/system-contracts/interfaces/IContractDeployer.sol#L5)
 
-This contract is used to deploy new smart contracts. Its job is to make sure that the bytecode for each deployed contract is known. This contract also defined the derivation address. Whenever a contract is deployed it emits the `ContractDeployed` event.
+Этот контракт используется для развертывания новых смарт-контрактов. Его задача - убедиться, что байт-код для каждого развернутого контракта известен. Этот контракт также определяет адрес получения. Всякий раз, когда контракт разворачивается, он вызывает событие `ContractDeployed`
 
-In the future, we will add the description on how to interact directly with this contract.
+В будущем мы добавим описание того, как напрямую взаимодействовать с этим контрактом.
 
 ## IL1Messenger
 
-[Interface](https://github.com/matter-labs/v2-testnet-contracts/blob/8de367778f3b7ed7e47ee8233c46c7fe046a75a3/l2/system-contracts/interfaces/IL1Messenger.sol#L5)
+[Интерфейс](https://github.com/matter-labs/v2-testnet-contracts/blob/6a93ff85d33dfff0008624eb9777d5a07a26c55d/l2/system-contracts/interfaces/IL1Messenger.sol#L5)
 
-This contract is used to send messages from zkSync to Ethereum L1. For each message sent the `L1MessageSent` event is emitted.
+Этот контракт используется для отправки сообщений с zkSync на Ethereum L1. Для каждого отправленного сообщения вызывается событие `L1MessageSent.`
 
 ## INonceHolder
 
-[Interface](https://github.com/matter-labs/v2-testnet-contracts/blob/8de367778f3b7ed7e47ee8233c46c7fe046a75a3/l2/system-contracts/interfaces/INonceHolder.sol#L5)
+[Интерфейс](https://github.com/matter-labs/v2-testnet-contracts/blob/6a93ff85d33dfff0008624eb9777d5a07a26c55d/l2/system-contracts/interfaces/INonceHolder.sol#L5)
 
-This contract stores account nonces. The account nonces are stored in a single place for efficiency ([the tx nonce and the deployment nonce](./contracts.md#differences-in-create-behaviour) are stored in a single place) and also for the ease of the operator.
+Этот контракт хранит nonce'ы аккаунта. Nonce'ы аккаунта хранятся в одном месте ради эффективности ([nonce транзакции и nonce развертывания](https://v2-docs.zksync.io/dev/zksync-v2/contracts.html#differences-in-create-behaviour) хранятся в одном месте) и для упрощения работы оператора.
 
 ## Bootloader
 

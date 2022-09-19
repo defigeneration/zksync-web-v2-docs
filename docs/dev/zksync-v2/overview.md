@@ -1,5 +1,5 @@
-# 2.0 Overview
+# Обзор 2.0
 
-zkSync 2.0 is made to look and feel like Ethereum, but with lower fees. Just like on Ethereum, smart contracts are written in Solidity/Vyper and can be called using the same clients as the other EVM-compatible chains.
+zkSync 2.0 создан для того, чтобы выглядеть и ощущаться как Эфириум, но с более низкими комиссиями. Так же, как и на Ethereum, смарт-контракты написаны на Solidity/ Vyper и могут быть вызваны, используя те же клиенты, что и другие EVM-совместимые сети.
 
-There is no need to register a separate private key to use zkSync. Existing Ethereum wallets work out of the box.
+Нет необходимости регистрировать отдельный приватный ключ для использования zkSync. Существующие кошельки Эфириума работают "из коробки".
