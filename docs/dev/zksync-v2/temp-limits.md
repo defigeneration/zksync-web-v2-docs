@@ -1,38 +1,38 @@
-# Temporary limitations
+# Временные ограничения
 
-::: tip Call for feedback
+::: tip Просьба об обратной связи
 
-As we add new features, this page is constantly updated.
+Эта страница постоянно обновлятся по мере добавления новых функций.
 
-If any of these block you, let us know on our [discord](https://discord.gg/px2aR7w), so we can prioritize accordingly.
+Если что-то из этого вам мешает, дайте нам знать в[discord](https://discord.gg/px2aR7w), чтобы мы могли приоритизировать задачи.
 
 :::
 
-## Using libraries in Solidity
+## Использование библиотек в Solidity
 
-If a Solidity library can be inlined, i.e. it only contains `private` or `internal` methods, then this library can be used without any limitations.
+Если библиотека Solidity может быть внутренней, т.е. содержать только `private` или `internal`методы, тогда эту библиотеку можно использовать без каких-либо ограничений.
 
-However, if a library contains at least one `public` or `external` method, it is no longer inlined in the Yul representation. These addresses need to be passed explicitly to our compiler. This is not currently supported by our hardhat plugin, but will be added later.
+Однако, если библиотека содержит хотя бы один `public` или `external` метод, она больше не является внутренней в представлении Yul. Такие адреса должны быть прямо переданы в наш компилятор. На данный момент это не поддерживается нашим hardhat плагином, но будет поддерживаться в будущем.
 
-## Unsupported opcodes
+## Неподдерживаемые опкоды
 
-- `SELFDESTRUCT` (it’s considered harmful and there are calls to deactivate it on L1).
-- `EXTCODECOPY` (it can be implemented if needed, but we skip it for now because zkEVM opcodes are not identical to EVM ones anyway).
-- `CALLCODE` (deprecated on Ethereum in favor of `DELEGATECALL`).
+- `SELFDESTRUCT` (считается вредным и есть призывы о его отключении на L1).
+- `EXTCODECOPY` (он может быть реализован при необходимсоти, но на данный момент мы его пропустили, потому что опкоды zkEVM все равно не идентичны опкодам EVM)
+- `CALLCODE` (объявлен устаревшим на Эфириуме в пользу `DELEGATECALL`).
 
-## Temporarily simulated by constant values
+## Временно смоделированы с постоянными значениями
 
-These opcodes will be supported by the time of the mainnet launch.
+Эти опкоды будут поддерживаться к моменту запуска mainnet.
 
-- `block.gaslimit` always returns `2^32-1`.
-- `MSIZE` always returns `2^16`.
-- `COINBASE` (`block.coinbase`) always returns the [bootloader](./system-contracts.md#bootloader) address.
-- `DIFFICULTY` (`block.difficulty`) always returns `2500000000000000` (zkSync does not have proof of work consensus).
+- `block.gaslimit` всегда возвращает `2^32-1`.
+- `MSIZE` всегда возвращает `2^16`.
+- `COINBASE` (`block.coinbase`) всегда возвращает адрес [bootloader](https://v2-docs.zksync.io/dev/zksync-v2/system-contracts.html#bootloader).
+- `DIFFICULTY` (`block.difficulty`) всегда возвращает `2500000000000000` (zkSync не имеет консенсуса Proof-of-Work).
 
-## Ignored by the compiler
+## Игнорируются компилятором
 
-- `PC` always returns `0` (since solidity 0.7.0, it is not accessible in Yul and Solidity).
+- `PC` всегда возвращает `0` (с версии solidity 0.7.0, не доступно в Yul и Solidity).
 
-## Precompiles
+## Предкомпилированные контракты
 
-- We currently only support `sha256` and `ecrecover`. We don't support any other precompiles!
+- На данный момент мы поддерживаем только `sha256` и `ecrecover`. Мы не поддерживаемм какие-либо иные преlкомпилированные контракты!

@@ -1,3 +1,3 @@
-# Block numbers and time
+# Время и номер блока
 
-TODO.
+В РАЗРАБОТКЕ.

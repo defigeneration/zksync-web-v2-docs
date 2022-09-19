@@ -1,51 +1,44 @@
-# Bridging funds
+# Перенос средств
 
-## Introduction
+## Введение
 
-Bridging is implemented by having two contracts 
-(one deployed to L1, and the second deployed to L2)
-communicating with each other using [L1 <-> L2 interoperability](./l1-l2-interop.md).
+BПеренос средств реализован через два контракта (один развернут на L1, второй - на L2), коммуницирующих друг с другом через интерфейс [L1 <-> L2 взаимодействия](https://v2-docs.zksync.io/dev/zksync-v2/l1-l2-interop.html).
 
-Developers are free to build their own bridge for any token.
-However, we are providing our default bridges (one for ETH and one for ERC20 tokens), which can be used for developers to use basic bridging.
+Разработчики вольны в создании своих собственных мостов для любых токенов. Однако, мы предоставляем наши мосты по умолчанию (один для ETH и один для токенов ERC20), которые разработчики могут использовать для базового переноса средств.
 
 ::: warning
 
-Addresses of tokens on L2 will always differ from L1 addresses.
+Адреса токенов на L2 всегда отличаются от их адресов на L1.
 
 :::
 
 
-## Default bridges
+## Мосты по умолчанию
 
-You can get default bridges' addresses using `zks_getBridgeContracts` endpoint
-or `getDefaultBridgeAddresses` method of `Provider` in our JS SDK.
+Вы можете узнать адреса мостов по умолчанию с помощью конечной точки `zks_getBridgeContracts` или метода `getDefaultBridgeAddresses` `Provider`'a в нашем JS SDK.
 
-### Deposits
+### Депозиты
 
-User makes a transaction to the L1 bridge by calling the `deposit` method. The following actions are then being executed:
+Пользователь совершает транзакцию в пользу моста на L1 путем вызова метода `deposit`. Затем исполняются следующие действия:
 
-- L1 tokens are being sent to the L1 bridge and become locked there.
-- L1 bridge initiates a transaction to the L2 bridge using L1 -> L2 communication.
+- Токены на L1 отправляются в мост на L1 и блокируются в нем.
+- Мост на L1 инициирует транзакцию в пользу моста на L2, используя L1 -> L2 коммуникацию.
 
-Within the L2 transaction, tokens are being minted and sent to the specified address on L2.
+В рамках  транзакции на L2 токены минтятся и отправляются на указанный адрес на L2.
 
-For every executed L1 -> L2 transaction there will be an L2 -> L1 log message confirming its execution.
+Для каждой исполненной L1 -> L2 транзакции всегда будет отправлено лог-сообщение L2 -> L1, подтверждающее ее исполонение.
 
-If this transaction fails for any reason (for example, the provided fee is too low)
-then the log message will state its failure.
-In this case the inclusion of the log can be proven on the L1 bridge to return the deposited funds back.
+Если транзакция проваливается по любой из причин (например, оплаченная комиссия слишком низкая), тогда лог-сообщение констатирует ее провал. В этом случае включение лог-сообщения в блок можеть быть доказано на мосту на L1. Эту нужно для того, чтобы вернуть депонированные средства назад.
 
-The log message described above is not fully supported by our SDK on our current testnet.
+Лог-сообщение, описанное выше полностью не поддерживается нашим SDK в текущем testnet.
 
-### Withdrawals
+### Выводы
 
-User makes a transaction to the L2 bridge by calling the `withdraw` method. The following actions are then being executed:
+Пользователь совершает транзакцию в пользу моста на L2 путем вызова метода `withdraw`. Затем исполняются следующие действия:
 
-- L2 tokens are being burnt.
-- L2 -> L1 message with the information about the withdrawal is being sent.
+- Токены на L2 сжигаются
+- Отправляется сообщение L2 -> L1 с информацией о том, что вывод отправлен
 
-After that, anyone can finalize the withdrawal on the L1 bridge by proving the inclusion of the L2 -> L1 message, and the funds will be sent to the withdrawal recipient.
+После этого кто угодно может завершить вывож на мосту на L1, предоставив доказательства включения L2 -> L1 сообщения, и средства будут отправлены получателю вывода.
 
-For the testnet, we automatically finalize all withdrawals,
-i.e., for every withdrawal, we will take care of it by making an L1 transaction that proves the inclusion for each message.
+Для testnet'a мы автоматически финализируем все выводы, т.е. мы позаботимся о каждом выводе путем отправки транзакций на стороне L1, которые будут доказывать включение каждого сообщения.

@@ -1,71 +1,69 @@
-# L1 / L2 Interoperability
+#  Взаимодействие L1/L2
 
-While most of the execution will happen on L2, some use-cases require interoperability with the L1 chain. The main use-cases are building complex bridges, maintaining governance smart contracts on one chain that govern contracts on other chains, etc.
+Хотя большинство операций исполняется на L2, некоторые из них требуют взаимодействия с сетью L1. Основными такими случаями являются построение сложных мостов, поддержание смарт-контрактов управления на одной сети, которые регулируют контракты на других сетях и т.д.
 
-In addition, the L2 censorship resistance is derived from the underlying chain, so the ability to send messages from Ethereum to zkSync is an important part of the censorship-resistance mechanism called [priority queue](#priority-queue).
+Кроме того, резистентность к цензуре на L2 наследуется от основной сети, поэтому возможность отправлять сообщения из Эфириума в zkSync является важной частью механизма резистентности к цензуре, называемого [приоритетной очередью](https://v2-docs.zksync.io/dev/zksync-v2/l1-l2-interop.html#priority-queue) (priority queue).
 
-## L1 -> L2 communication
+## L1 -> L2 коммуникация
 
-Sending transactions from Ethereum to zkSync is done via the zkSync smart contract. It allows the sender to request transactions directly from L1. Thereby allowing permissionless pass of any data from the Ethereum into zkSync.
+Отправка транзакций с Эфириума на zkSync происходить через смарт-контракт zkSync. Это позволяет отправителю запрашивать транзакции напрямую из L1, тем самым обеспечивая беспрепятственную передачу любых данных с Эфириума в zkSync.
 
-## Priority queue
+## Приоритетная очередь
 
-The goal of the priority queue is to provide a censorship-resistant way to interact with zkSync in case the operator becomes malicious or unavailable.
+Задачей приоритетной очереди является предоставление резистентного к цензуре способа взаимодействия с zkSync в случае, если оператор становится злонамеренным или недоступным.
 
-The way the priority queue works in zkSync 2.0 is very close to how it works in the previous version of zkSync.
-For the full picture, we first present how priority queue works on zkSync 1.x.
-This gives the rationale for the new design of the priority queue for zkSync 2.0.
+Способ работы приоритетный очереди на zkSync 2.0 очень близок к своему аналогу в предыдущей версии zkSync. Для полноты картины мы сначала презентуем способ работы приоритетной очереди на zkSync 1.x. Это даст нам понимание, почему для zkSync 2.0 необходим новый дизайн приоритетной очереди.
 
-### How it works in zkSync 1.x
+### Как это работает zkSync 1.x
 
-In the previous version of zkSync we only had two operations that could be sent to zkSync from L1:
+В предыдущей версии zkSync было всего две операции, которые могли быть отправлены на zkSync с L1:
 
-- `Deposit`: to bridge funds from Ethereum to zkSync.
-- `FullExit`: to bridge the funds back from Ethereum. This is essentially the same as `Withdraw` in zkSync 2.0. 
+- `Deposit`: перенос средств с Эфириума на zkSync.
+- `FullExit`: Перенос средств назад на Эфириум. По сути, это то же самое, что и `Withdraw` в zkSync 2.0.
 
-If users wanted to deposit funds to, or withdraw funds from, zkSync, they would have sent a transaction request to the smart contract which then got appended to the deque of priority transactions. The deque has the following rules:
+Если пользователь хотел отправить средства в, или вывести с zkSync, он должен был отправить запрос на транзакцию в смарт-контракт, который затем прикреплялся к двухсторонней очереди приоритетных транзакций. Двусторонняя очередь имеет следующие правила:
 
-- All transactions are processed sequentially.
-- Each priority operation must be processed by the operator within `X` days since it was submitted to the contract.
+- Все транзакции обрабатываются поочередно.
+- Каждая приоритетная операция должна быть обработана оператором в течение `X` дней с момента ее отправки в контракт.
 
-The first rule is strictly enforced by the smart contract. The second rule may be violated if the operator becomes malicious or unavailable. In case that happens, the system entered ''exodus mode'', where no new blocks can be processed and the users can withdraw their funds without cooperation from the operator.
+Первое правило гарантированно обеспечивается смарт-контрактом. Второе правило может быть нарушено, если оператор становится злонамеренным или недоступным. В таком случае система входит в 'exodus mode' (режим исхода), в котором новые блоки не обрабатываются и пользователи могут извлечь свои средства без взаимодействия с оператором.
 
-### What changes are needed?
+### Какие изменения необходимы?
 
-The process described above works well for a system with a small set of relatively light operations supported. zkSync 2.0 supports general smart contract computation and thus, some principles had to be changed in order to preserve the stability of the network.
+Описанный выше процесс отлично работает в системах с поддержкой небольшого набора относительно легких операций. zkSync 2.0 поддерживает универсальные вычисления для смарт-контрактов и, следовательно, некоторые принципы необходимо изменить для сохранения стабильности сети.
 
-Firstly, all transactions need to be supported by the priority queue. Users may have their funds locked on an L2 smart contract, and not on their own L2 account. Therefore before moving their funds to L1, they need to send an `Execute` transaction to zkSync to release the funds from that smart contract first.
+Во-первых, все транзакции должны поддерживаться приоритетной очередью. Пользователи могут иметь заблокированные средства в смарт-контракте L2, но не на своем собственном L2 аккаунте. Поэтому прежде чем переместить свои средства на L1, им нужно для начала отправить транзакцию `Execute` в zkSync для высвобождения средств из этого смарт-контракта.
 
-Secondly, the priority queue needs to stay censorship-resistant. But imagine what will happen if users start sending a lot of transactions that take the entirety of the block ergs limit? There needs to be a way to prevent spam attacks on the system. That's why submitting transactions to the priority queue is no longer free. Users need to pay a certain fee to the operator for processing their transactions. It is really hard to calculate the accurate fee in a permissionless way. Thus, the fee for a transaction is equal to `txBaseCost * gasPrice`. The `gasPrice` is the gas price of the users' transaction, while `txBaseCost` is the base cost for the transaction, which depends on its parameters (e.g. `ergs_limit` for `Execute` transaction).
+Во-вторых, приоритетная очередь должна оставаться резистентной к цензуре. Но представьте, что случится, если пользователи начнут отправлять множество транзакций, которые заполняют весь лимит ergs в блоке? Должен быть способ предотвращения спам-атак на систему. Поэтому отправка транзакций в приоритетную очередь более не бесплатна. Пользователи должны платить определенную комиссию оператору для обработки их транзакций. Расчет точной комиссии децентрализованным способом является сложной задачей. Таким образом, комиссия за транзакцию равна `txBaseCost * gasPrice`. `gasPrice` - это цена газа за пользовательскую транзакцию, тогда как `txBaseCost` - это базовая цена транзакции, которая зависит от ее(транзакции) параметров (например, `ergs_limit` для транзакции `Execute` ).
 
-Thirdly, the operator can not commit to processing each and every transaction within `X` days. Again, this is needed to prevent spam attacks on the priority queue. We changed this rule to the following one:
+В-третьих, оператор не может обещать проведение каждой транзакции в течение `Х` дней. И снова, это необходимо для предотвращения спам-атак на приоритетную очередь. Мы изменили это правило на следующее:
 
-- The operator must do at least `X` amount of work (see below) on the priority queue or the priority queue should be empty.
+- Оператор должен выполнить как минимум `Х` количество работы (см. ниже) в приоритетной очереди, либо приоритетная очередь должна быть пуста.
 
-In other words, we require the operator to do its best instead of requiring a strict deadline. The measure of "the work" is still to be developed. Most likely it will be the number of `ergs` the priority operations used.
+Другими словами, мы требуем от оператора делать максимум вместо требования следовать строгим дедлайнам. Метод измерения количества "работы" еще предстоит разработать. Наиболее вероятно, что это будет количество `ergs`, использованных в приоритетных операциях.
 
-In the future, we will also add the ability to "prioritize" L1->L2 transactions, allowing users to speed the inclusion of their transaction in exchange for paying higher fee to the operator.
+В будущем мы также добавим возможность "приоритезации" транзакций типа L1->L2, позволяя пользователям регулировать скорость включения их транзакции в обмен на оплату более высокой комиссии оператору.
 
-## Priority mode
+## Приоритетный режим
 
-If the operator fails to process the needed L1 transactions, the system enters the ''Priority mode''. In this mode, everyone can become an operator by staking tokens. The exact details of the priority mode are still under development and will be described in more detail closer to the mainnet launch.
+Если оператору не удается провести необходимые транзакции на L1, система входит в "Приоритетный режим". В этом режиме любой может стать оператором путем стейкинга токенов. Более точные детали по приоритетному режиму пока находятся в разработке и будут описаны более детально ближе к запуску mainnet.
 
-To reduce risks, alpha mainnet will start with a mechanism to instantly stop and upgrade the network, which contradicts the purpose of the priority mode. Priority mode will be gradually introduced in the following releases.
+Для снижения рисков альфа-mainnet запустится с механизмом немедленной остановки и модификации сети, что противоречит цели приоритетного режима. Приоритетный режим будет вводиться постепенно в последующих релизах.
 
-## L2 -> L1 communication
+## L2 -> L1 коммуникация
 
-L2 -> L1 communication, in contrast to L1 -> L2 communication, is based only on transferring of the information, and not on the transaction execution on L1. It is a built-in feature, which is made up of two parts: sending a message from L2 and reading it on L1. The first is implemented as a call to an L2 system smart contract. And the second is implemented on the zkSync L1 smart contract as a getter function.
+L2 -> L1 коммуникация, в отличие от L1 -> L2 коммуникации, основана только на передаче информации, а не на исполнении транзакций на L1. Это встроенная функция, выполненная из двух частей: отправки сообщения с L2 и чтения его на L1. Первая часть реализована как вызов системного смарт-контракта L2. Вторая часть же реализована на смарт-контракте zkSync на L1 в виде функции получателя (getter).
 
-### Sending messages
+### Отправка сообщений
 
-Each message sent from L2 to L1 contains the sender's address and the message itself. The length of the message can be arbitrarily large, but the longer the message, the more expensive sending it is. The operator must include all messages for the corresponding merkle root (see next paragraph). Hence, all the messages are publicly available, and one does not have to rely on the operator to reveal them.
+Каждое сообщение, отправленное с L2 на L1 содержит в себе адрес отправителя и само сообщение. Длина сообщения может быть произвольной, но чем длиннее сообщение, тем дороже будет стоить его отправка. Оператор должен включать все сообщения для соответствующего дерева хэшей (см. следующий абзац). Таким образом, все сообщения доступны публично, и никому не нужно полагаться на оператора, чтобы раскрыть их.
 
-### Reading messages
+### Чтение сообщений
 
-Every message sent can be read on-chain. Moreover, it is possible to prove that message has been sent in a specific L2 block. To make such proof as cheap as possible for both the user and the operator, we store all messages, for each L2 block, in a merkle tree. Accordingly, any L1 smart contract can consume the message sent by providing a proof of inclusion in some L2 block. A proof can be generated based only on the data that the operator sent to the zkSync L1 smart contract. The proof can also be obtained via [the API](../../api/api.md#zksgetl2tol1msgproof).
+Каждое отправленное сообщение можно прочесть он-чейн. Более того, можно доказать, что сообщение было отправлено в конкретном блоке L2. Для того, чтобы сделать таке доказательство как можно более дешевым и для пользователя, и для оператора, мы храним все сообщения, для каждого блока L2, в дереве хэшей (merkle tree). Соответственно, любой смарт-контракт на L1 может принять отправленное сообщение путем предоставления доказательства включения в какой-либо из блоков L2. Доказательство может быть сгенерированно, основываясь лишь на данных, которые оператор отправил на смарт-контракт zkSync L1. Также доказательство может быть получено через [API](https://v2-docs.zksync.io/api/api.html#zksgetl2tol1msgproof).
 
-### Summary on L2->L1 messaging
+### Резюме по L2->L1 коммуникации
 
-- L2 -> L1 communication requires one transaction on L2 and one on L1.
-- Messages can be of arbitrary length.
-- All the data needed for proving message inclusion in an L2 block can always be restored from Ethereum. However, the easiest way is to request the proof from the operator via API.
+- Для L2 -> L1 комуникации нужна одна транзакция на L2 и одна транзакция на L1.
+- Сообщения могут быть произвольной длины.
+- Вся необходимая информация для доказательства включения сообщения в блок L2 всегда может быть восстановлена из Эфириума. Однако, наиболее легким способом является запрос доказательства у оператора через API.

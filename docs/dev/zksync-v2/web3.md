@@ -1,11 +1,11 @@
 # Web3 API
 
-zkSync fully supports the standard [Ethereum JSON-RPC API](https://eth.wiki/json-rpc/API), but it also has some additional L2-specific functionality.
+zkSync полностью поддерживает стандартный [Ethereum JSON-RPC API](https://eth.wiki/json-rpc/API), а также имеет некоторые дополнительные функции, специфичные для L2.
 
-As long as the code does not involve deploying new smart contracts (they can only be deployed using EIP712 transactions, more on that [below](../../api/api.md#eip712)), _no changes to the codebase are needed._
+До тех пор, пока код не включает в себя развертывание новых смарт-контрактов (они могут быть развернуты только путем EIP712-транзакции, подробнее [ниже](https://v2-docs.zksync.io/api/api.html#eip712)), _нет нужды в корректировке кодовой базы_.
 
-You may continue using the SDKs that you use now. The UX will be identical to the one on Ethereum.
+Вы можете продолжать использовать SDK как прежде. Пользовательский опыт будет идентичен Эфириуму.
 
-For deploying smart contracts or enabling the unique zkSync features for users (e.g. account abstraction), using the EIP712 transaction type is required.
+Для развертывания смарт-контрактов или включения уникальных функций zkSync для пользователей (например, абстракция аккаунта), необходимо использовать транзакцию типа EIP712.
 
-A more detailed description of the zkSync JSON-RPC API can be found [here](../../api/api).
+Более детальное описание zkSync JSON-RPC API можно найти [тут](https://v2-docs.zksync.io/api/api).
