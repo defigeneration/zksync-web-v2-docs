@@ -1,6 +1,6 @@
-# Deploying contracts
+# Развертывание контрактов
 
-There are currently two main ways to compile & deploy Solidity smart contracts on zkSync:
+Сейчас есть два основных способа скомпилировать и развернуть смарт-контракт на Solidity на zkSync:
 
-- Via our Hardhat Plugin. Here is the [tutorial](../../api/hardhat/getting-started.md) on how to get started with it.
-- Via Dockerized compiler and our SDK. The tutorial on how to do that will be provided soon.
+- Через наш Hardhat плагин. Вот [руководство](https://v2-docs.zksync.io/api/hardhat/getting-started.html), как начать с ним работу.
+- Через Докеризованный компилятор и наш SDK. Руководство по даунному способу будет опубликано в ближайшее время.

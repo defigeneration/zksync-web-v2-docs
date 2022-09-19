@@ -1,18 +1,18 @@
-# Developer quickstart
+# Быстрый старт
 
-## Do I need experience with zkSync 1.x?
+## Нужен ли мне опыт разработки на zkSync 1.x?
 
-Some experience with zkSync 1.x would be helpful to understand some core concepts, e.g. how finality works. From all other aspects, zkSync 2.0 and zkSync 1.x are very different systems, and experience with the latter is not needed to build on zkSync 2.0.
+Некоторый опыт с zkSync 1.x может быть полезен для понимания некоторых ключевых концепций, например, как работает финальность. Касательно других аспектов, zkSync 2.0 и 1.х - очень разные системы, и опыт с 1.х не нужен для разработки на zkSync 2.0.
 
-## What do I need to start building?
+## Что мне нужно для начала разработки?
 
-All the existing SDKs for Ethereum will work out of the box and your users will have the same experience as on Ethereum. If you want to enable advanced zkSync features, like account abstraction, the zkSync SDK should be used.
+Все существующие SDK для Эфириума будут работать из коробки и ваши пользователи будут иметь тот же опыт, что и на Эфириуме. Если вы ходите подключить расширенные функции zkSync, как абстракция аккаунта, то нужно использоваться zkSync SDK.
 
-The only other place where using zkSync SDK is required is during contract deployment. This can be easily done through our hardhat plugin.
+Другое единственное место, где необходимо использование zkSync SDK - это развертывание контрактов. Это легко делается с помощью нашего hardhat плагина.
 
-## Hello World on zkSync
+## Hello World на zkSync
 
-Check out our step-by-step [tutorial](./hello-world.md), where you will learn:
+Посмотрите наше [пошаговое руководство](https://v2-docs.zksync.io/dev/guide/hello-world.html), в котором вы узнаете:
 
-- How to install zkSync hardhat plugin and deploy smart contracts with it.
-- How to build front-end for your dApp using `zksync-web3` library.
+- Как установить hardhat плагин zkSync и разворачивать смарт-контракты с его помощью
+- Как построить фронтенд для вашего dApp (децентрализованное приложение), используя библиотеку `zksync-web3`.

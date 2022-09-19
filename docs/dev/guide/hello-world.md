@@ -1,25 +1,27 @@
-# Tutorial: Hello World
+# Руководство Hello World!
 
-This tutorial explains how to build a full dApp using the zkSync development toolbox.
+Это руководство объясняет, как построить полноценный dApp, используя инструментарий zkSync.
 
-The following functionality will be implemented:
+Будет реализован следующий функционал:
 
-- There will be a greeting stored on a smart contract on zkSync.
-- The user will be able to get the greeting after the dApp page is loaded.
-- The user will be able to change the greeting on the smart contract.
-- The user will be able to select the token that they want to pay the fee with. By default, the tutorial supports only a single token: ether. An example on how to pay fees with ERC20 tokens will be shown in the [paying fees using testnet paymaster](#paying-fees-using-testnet-paymaster). If you decide to build a project on mainnet, you should read the documentation for the [paymaster](../zksync-v2/aa.md#paymasters) you are going to use.
+- В смарт-контракте на zkSync будет содержаться приветствие.
+- Пользователь сможет увидеть приветствие после загрузки страницы dApp.
+- Пользователь сможет изменить текст приветствия в смарт-контракте.
+- Пользователь сможет выбрать токен, который он желает использовать для комиссий. По умолчания руководство поддерживает только один токен: эфир. Пример оплаты комиссий с помощью токенов ERC20 будет продемонстрирован в этой [статье](https://v2-docs.zksync.io/dev/guide/hello-world.html#paying-fees-using-testnet-paymaster). Если вы решили строить проект в mainnet, вам стоит прочесть документацию к [paymaster](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#paymasters), которого вы собираетесь использовать.\
 
-## Prerequisites
 
-For this tutorial, the following programs must be installed:
+### Подготовка
 
-- `yarn` package manager. `npm` examples will be added soon.
-- `Docker` for compilation.
-- A wallet with sufficient Görli `ETH` on L1 to pay for bridging funds to zkSync as well as deploying smart contracts. Some ERC20 tokens on zkSync are required for the testnet paymaster tutorial.
+Для целей этого руководства необходимо установить следующие программы:
 
-## Initializing the project & deploying smart contract
+* Менеджер пакетов `yarn` package manager. Примеры с `npm` будут добавлены позже.
+* `Docker` для компиляции.
+* Кошелек с достаточным количеством Görli `ETH` на L1 для платы за перенос средств на zkSync, а так же для развертывания контрактов. Нужно немного ERC20 токенов на zkSync для прохождения руководства testnet paymaster.
+* A wallet with sufficient Görli `ETH` on L1 to pay for bridging funds to zkSync as well as deploying smart contracts. Some ERC20 tokens on zkSync are required for the testnet paymaster tutorial.
 
-1. Initialize the project and install the dependencies. Run the following commands in the terminal:
+## Инициализация проекта и развертывание смарт-контракта
+
+1. Создайте проект и установите все зависимости. Запустите следующие команды в терминале:
 
 ```
 mkdir greeter-example
@@ -28,9 +30,9 @@ yarn init -y
 yarn add -D typescript ts-node ethers zksync-web3 hardhat @matterlabs/hardhat-zksync-solc @matterlabs/hardhat-zksync-deploy
 ```
 
-Please note that currently typescript is required by zkSync plugins.
+Пожалуйста, помните, на данный момент для плагинов zkSync необходим typescript.
 
-2. Create the `hardhat.config.ts` file and paste the following code there:
+2. Создайте файл `hardhat.config.ts` и вставьте в него следующий код:
 
 ```typescript
 require("@matterlabs/hardhat-zksync-deploy");
@@ -65,17 +67,17 @@ module.exports = {
 };
 ```
 
-::: warning Tip
+::: warning Подсказка
 
-If this contract has already been complied, you should delete the artifact and cached folders, otherwise it won't recompile with this compiler version.
+Если этот контракт уже был скомпилирован, вам нужно удалить артефакт и кэшированные папки, иначе контракт не скомпилируется в текущей версии компилятора
 
 :::
 
-To learn how to verify your smart contrcat using zkSync block explorer, click [here](./contract-verification.md).
+Чтобы узнать, как верифицировать ваш смарт-контракт, используя обозреватель блоков zkSync, нажмите [сюда](https://v2-docs.zksync.io/dev/guide/contract-verification.html).
 
-3. Create the `contracts` and `deploy` folders. The former is the place where all the contracts' `*.sol` files should be stored, and the latter is the place where all the scripts related to deploying the contract will be put.
+3. Создайте папки `contracts` и `deploy`. Первая - это место, где должны храниться все контракты формата  `*.sol`,  а во вторую будут помещаться все скрипты, связанные с развертыванием контракта в сети.
 
-4. Create the `contracts/Greeter.sol` contract and insert the following code there:
+4. Создайте контракт `contracts/Greeter.sol` вставьте в него следующий код:
 
 ```solidity
 //SPDX-License-Identifier: Unlicense
@@ -98,13 +100,13 @@ contract Greeter {
 }
 ```
 
-5. Compile the contracts with the following command:
+5. Скомпилируйте контракты с помощью следующей команды
 
 ```
 yarn hardhat compile
 ```
 
-6. Create the deployment script in the `deploy/deploy.ts`:
+6. Создайте скрипт для развертывания в `deploy/deploy.ts`:
 
 ```typescript
 import { Wallet, Provider, utils } from "zksync-web3";
@@ -153,27 +155,27 @@ console.log("constructor args:" + greeterContract.interface.encodeDeploy([greeti
 }
 ```
 
-7. After replacing the `WALLET-PRIVATE-KEY` text with the `0x`-prefixed private key of the Ethereum wallet, run the script using the following command:
+После замены текста `WALLET-PRIVATE-KEY` приватным ключом кошелька Эфириума с добавлением префикса `0x`, запустите скрипт следующей командой:
 
 ```
 yarn hardhat deploy-zksync
 ```
 
-In the output, you should see the address where the contract was deployed to.
+В качестве вывода вы должны увидеть адрес, где был развернут смарт-контракт.
 
-## Front-end integration
+## Интеграция фронтенда
 
-### Setting up the project
+### Подготовка проекта
 
-In this tutorial, `Vue` will be used as the web framework of choice, but the process will be quite similar regardless of the framework used. To focus on the specifics of using the `zksync-web3` SDK, a template is supplied with all the front-end work done. The final step is to interact with zkSync smart contract.
+В этом руководстве будет использован `Vue` в качестве веб-фреймворка, однако процесс будет примерно одинаковым вне зависимости от выбранного фреймворка. Для фокусировки на особенностях использования `zksync-web3` SDK, примеры приводятся с уже выполненной работой по фронденду. Финальным шагом будет взаимодействие с контрактом zkSync.
 
-1. Clone it:
+1. Клонируйте это:
 
 ```
 git clone https://github.com/matter-labs/greeter-tutorial-starter
 ```
 
-2. Spin up the project:
+2\. Активируйте проект:
 
 ```
 cd greeter-tutorial-starter
@@ -181,18 +183,18 @@ yarn
 yarn serve
 ```
 
-By default, the page should be running at `http://localhost:8080`. Open this URL in the browser to see the page.
+По умолчанию, страница должна работать на `http://localhost:8080`. Откройте этот адрес в браузере, чтобы увидеть эту страницу.
 
-### Connecting to Metamask & bridging tokens to zkSync
+### Подключение к Metamask и перенос токенов на zkSync
 
-In order to interact with dApps built on zkSync, connect the Metamask wallet to the zkSync alpha testnet network and bridge some funds to L2.
+Чтобы взаимодействовать с приложениями, построенными на zkSync, подключите Metamask к сети zkSync alpha testnet и перенесите немного средств на L2.
 
-- The [guide](../testnet/metamask.md) on connecting to Metamask.
-- Use our [portal](https://portal.zksync.io) to bridge funds to zkSync.
+- [Руководство](https://v2-docs.zksync.io/dev/testnet/metamask.html) по подключению Metamask.
+- Используйте наш [портал](https://portal.zksync.io/) для переноса средств на zkSync.
 
-### Project structure
+### Структура проекта
 
-All the code will be written in the `./src/App.vue`. All the front-end code has been completed; the only task left is to fill out the TODO-s regarding interaction with zkSync:
+Весь код будет записан в `./src/App.vue`. Весь фронтент код уже завершен; единственное, что осталось сделать, это заполнить пробелы вместо "TODO" касательно взаимодействия с zkSync:
 
 ```javascript
 initializeProviderAndSigner() {
@@ -205,7 +207,7 @@ async getGreeting() {
 },
 
 async getFee() {
-  // TOOD: return formatted fee
+  // TODO: return formatted fee
   return "";
 },
 
@@ -243,7 +245,7 @@ async changeGreeting() {
 },
 ```
 
-On the top of the `<script>` tag, you may see the parts that should be filled with the address of the deployed `Greeter` contract and the path to its ABI. Let's fill these fields in the following sections.
+На верху тега `<script>` вы можете увидеть элементы, которые нужно заполнить адресом развернутого контракта `Greeter` и путь к его ABI. Давайте заполним эти поля в следующих секциях.
 
 ```javascript
 // eslint-disable-next-line
@@ -252,7 +254,7 @@ const GREETER_CONTRACT_ADDRESS = ""; // TODO: insert the Greeter contract addres
 const GREETER_CONTRACT_ABI = []; // TODO: insert the path to the Greeter contract ABI here
 ```
 
-Add imports above these constants. The header of the `<script>` tag will appear as the following:
+Добавьте импорты над этими константами. Заголовок тега `<script>` будет выглядеть следующим образом:
 
 ```javascript
 import {} from "zksync-web3";
@@ -264,22 +266,22 @@ const GREETER_CONTRACT_ADDRESS = ""; // TODO: insert the Greeter contract addres
 const GREETER_CONTRACT_ABI = []; // TODO: insert the path to the Greeter contract ABI here
 ```
 
-### Installing `zksync-web3`
+### Установка `zksync-web3`
 
-Run the following commands to install `zksync-web3` and `ethers`:
+Запустите следующие команды для установки`zksync-web3` и `ethers`:
 
 ```
 yarn add ethers zksync-web3
 ```
 
-### Getting the ABI and contract address
+### Получение ABI и адреса контракта
 
-Open `./src/App.vue` and set the `GREETER_CONTRACT_ADDRESS` constant equal to the address where the greeter contract was deployed.
+Откройте `./src/App.vue` и установите константу `GREETER_CONTRACT_ADDRESS` равной адресу, где контракт greeter был развернут.
 
-To interact with zkSync's smart contract, its ABI is also needed.
+Для взаимодействия с контрактом zkSync так же нужен его ABI.
 
-- Create the `./src/abi.json` file.
-- You can get the contract's ABI in the hardhat project folder from the previous section in the `./artifacts-zk/contracts/Greeter.sol/Greeter.json` file. You should copy the `abi` array and paste it into the `abi.json` created in the previous step. The file should look roughly the following way:
+- Создайте файл `./src/abi.json` .
+- Вы можете достать ABI контракта в папке проекта hardhat из предыдущей секции руководства в файле `./artifacts-zk/contracts/Greeter.sol/Greeter.json`. Вам нужно скопировать массив `abi` и вставить его в файл `abi.json`, созданный шагом ранее. Файл должен выглядеть примерно так:
 
 ```json
 [
@@ -323,7 +325,7 @@ To interact with zkSync's smart contract, its ABI is also needed.
 ]
 ```
 
-Set the `GREETER_CONTRACT_ABI` to require the ABI file.
+Установите `GREETER_CONTRACT_ABI` на запрос файла ABI:
 
 ```js
 // eslint-disable-next-line
@@ -332,23 +334,22 @@ const GREETER_CONTRACT_ADDRESS = "0x...";
 const GREETER_CONTRACT_ABI = require("./abi.json");
 ```
 
-### Working with provider
+### Работа с провайдером
 
-1. Go to the `initializeProviderAndSigner` method in `./src/App.vue`. This method is called after the connection to Metamask is successful.
+1. Перейдите к методу `initializeProviderAndSigner` в `./src/App.vue`. Этот метод вызывается после успешного подключения к Metamask.
 
-In this method we should:
+В этом методе нам нужно:
 
-- Initialize `Web3Provider` and `Signer` objects for interacting with zkSync.
-- Initialize `Contract` object to interact with the `Greeter` contract.
+* Инициализировать объекты `Web3Provider` и `Signer` для взаимодействия с zkSync.
+* Инициализировать объект `Contract` для взаимодействия с контрактом `Greeter`.
 
-2. Add the necessary dependencies:
+2.  Добавьте необходимые зависимости:
 
 ```javascript
 import { Contract, Web3Provider, Provider } from "zksync-web3";
 ```
 
-3. The two steps can be done the following way:
-
+3. Эти два шага могут быть выполнены следующим образом:
 ```javascript
 initializeProviderAndSigner() {
     this.provider = new Provider('https://zksync2-testnet.zksync.dev');
@@ -362,9 +363,9 @@ initializeProviderAndSigner() {
 },
 ```
 
-### Retrieving the greeting
+### Извлечение приветствия
 
-1. Fill in the method retrieving the greeting from smart contract:
+1. Заполните метод, извлекающий приветствие из смарт-контракта:
 
 ```javascript
 async getGreeting() {
@@ -373,7 +374,7 @@ async getGreeting() {
 }
 ```
 
-The full methods now look the following way:
+Полные методы теперь выглядят так:
 
 ```javascript
 initializeProviderAndSigner() {
@@ -391,24 +392,24 @@ async getGreeting() {
 },
 ```
 
-After connecting the Metamask wallet, the following page should be viewable:
+После подключения Metamask должна быть видна следующая страница
 
 ![img](/start-1.png)
 
-The chosen token to pay the fee can now be selected. However, no balances are updated, _yet_.
+Теперь можно выбрать токен для оплаты комиссий. Однако баланс не обновляется, _пока._
 
-### Retrieving token balance and transaction fee
+### Извлечение баланса токенов и транзакционных комиссий
 
-The easiest way to retrieve the user's balance is to use the `Signer.getBalance` method. 
+Наилегчайшим способом выяснения баланса пользователя явлеятся использование метода `Signer.getBalance.`
 
-1. Add the necessary dependencies:
+1. Добавьте необходимые зависимости:
 
 ```javascript
 // `ethers` is only used in this tutorial for its utility functions
 import { ethers } from "ethers";
 ```
 
-2. Implement the method itself:
+2. Реализуйте сам метод:
 
 ```javascript
 async getBalance() {
@@ -420,7 +421,7 @@ async getBalance() {
 },
 ```
 
-3. Estimate the fee:
+3. Расчитайте комиссию:
 
 ```javascript
 async getFee() {
@@ -435,23 +436,23 @@ async getFee() {
 },
 ```
 
-::: tip Paying fees in ERC20
+::: tip Оплата комиссий в ERC20
 
-zkSync 2.0 does not natively support paying fees in ERC20 tokens, as the account abstraction feature facilitates that. An example on how to use the testnet paymaster will be provided in this tutorial below. However, when working on mainnet, you should either provide the paymaster services [yourself](./custom-paymaster-tutorial.md) or use a 3rd party paymaster. 
+zkSync 2.0 нативно не поддерживает оплату комиссий в токенах ERC20, так как функция абстракции аккаунта позволяет делать это. Пример использования testnet paymaster для этих целей будет представлен далее в этом руководстве. Однако, работая в mainnet, [вы должны сами](https://v2-docs.zksync.io/dev/guide/custom-paymaster-tutorial.html) предоставлять услуги paymaster'a, или использовать paymaster'a, предоставленного 3им лицом.
 
 :::
 
-When opening the page and select the token to pay fee with, the balance and the expected fee for the transaction will be available.
+При открытии страницы и выборе токена для комиссий будут доступны баланс и ожидаемая комиссия за транзакцию.
 
-The `Refresh` button should be used to recalculate the fee, as the fee may depend on the length of the string to be set.
+Кнопка `Refresh` используется для перерасчета комиссии, так как она может зависеть от устанавливаемой длины строки.
 
-It is possible to also click on the `Change greeting` button, but nothing will be changed as the contract has not been called yet.
+Также можно нажать на кнопку `Change greeting,` но ничего не произойдет, так как контракт еще не был вызыван.
 
 ![img](/start-2.png)
 
-### Updating the greeting
+### Изменение приветствия
 
-1. Interacting with a smart contract works absolutely the same way as in `ethers`, however, if you want to use zkSync-specific features you may need to provide some additional parameters in the overrides:
+1. Взаимодействие со смарт-контрактом работает абсолютно так же, как `ethers`, хотя, если вы хотите использовать спец-функции zkSync, вам может понадобиться внесение дополнительных параметров в overrides (переопределения):
 
 ```javascript
 // The example of paying fees using a paymaster will be shown in the 
@@ -459,13 +460,13 @@ It is possible to also click on the `Change greeting` button, but nothing will b
 const txHandle = await this.contract.setGreeting(this.newGreeting, await this.getOverrides());
 ```
 
-2. Wait until the transaction is committed:
+2. Подождите, пока транзакция обработается:
 
 ```javascript
 await txHandle.wait();
 ```
 
-The full method looks the following way:
+Полностью метод выглядит так:
 
 ```javascript
 async changeGreeting() {
@@ -497,21 +498,21 @@ async changeGreeting() {
 },
 ```
 
-You now have a fully functioal Greeter-dApp! However, it does not leverage any zkSync-specific features.
+Теперь у вас есть полноценное приложение-приветствователь! Однако же, он не утилизирует каких-либо zkSync-специфичных функций.
 
-### Paying fees using testnet paymaster
+### Оплата комиссий с использованием testnet paymaster
 
-Even though ether is the only token you can pay fees with, the account abstraction feature allows you to integrate [paymasters](../zksync-v2/aa.md#paymasters) that can either pay the fees entirely for you or swap your tokens on the fly. In this tutorial, we will use the [testnet paymaster](../zksync-v2/aa.md#testnet-paymaster) that is provided on all zkSync testnets. It allows users to pay fees in an ERC20 token with the exchange rate of ETH of 1:1, i.e. one unit of the token for one wei of ETH.
+Хоть эфир и является единственным токеном, которым вы можете оплачивать комиссии, функция абстракции аккаунта позволяет вам интегрировать [paymaster](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#paymasters)'ов, которые могут или полностью оплачивать комиссии за вас, или обменивать ваши токены на лету. В этом руководстве мы будет использовать [testnet paymaster](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#testnet-paymaster)'a, который предоставляется на всех тестнетах zkSync. Он позволяет пользователям оплачивать комиссии в ERC20 токенах по курсу обмена 1:1 к эфиру, то есть одна единица токена за один wei ETH.
 
-::: tip Mainnet integration
+::: Интеграция в Mainnet
 
-Testnet paymaster is purely for demonstration of the feature and won't be available on mainnet. When integrating your protocol on mainnet, you should follow the documentation of the paymaster you will use.
+Testnet paymaster работает исключительно в целях демонстрации возможностей и не будет доступен в mainnet. При интеграций в свой протокол в mainnet вам нужно следовать документации к paymaster, которого вы используете.
 
 :::
 
-The address of the paymaster as well as the required input should be provided in the `getOverrides` method.
+Адрес paymaster'a, наряду с требуемыми данными, должен быть предоставлен в метод `getOverrides`
 
-1. We need to retrieve the address of the testnet paymaster:
+1. Нам нужно извлечь адрес testnet paymaster'a:
 
 ```javascript
 async getOverrides() {
@@ -525,15 +526,15 @@ async getOverrides() {
 }
 ```
 
-Note, that it is recommended to retrieve the testnet paymaster's address each time before any interactions as it may change.
+Имейте в виду, что извлекать адрес testnet paymaster'a рекомендуется каждый раз перед каждым взаимодействием, так как он (адрес) может меняться.
 
-2. Add `utils` to the imports from `zksync-web3` SDK:
+2. Добавьте `utils` к импортам из `zksync-web3` SDK:
 
 ```javascript
 import { Contract, Web3Provider, Provider, utils } from "zksync-web3";
 ```
 
-2. We need to calculate how many tokens are required to process the transaction. Since the testnet paymaster exchanges any ERC20 token to ETH at a 1:1 rate, the amount is the same as the ETH amount:
+3. Нам нужно расчитать, как много токенов необходимо для проведения транзакции. Т.к. testnet paymaster обменивает любой токен ERC20 по курсу 1:1 к ETH, то сумма будет такой же, как и сумма в ETH.
 
 ```javascript
 async getOverrides() {
@@ -551,7 +552,7 @@ async getOverrides() {
 }
 ```
 
-3. Now, what is left is to encode the paymasterInput by the [protocol requirements](../zksync-v2/aa.md#testnet-paymaster) and return the needed overrides:
+4. Теперь на осталось закодировать `paymasterInput` по [требованиям протокола](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#testnet-paymaster) и вернуть нужные overrides (переопределения):
 
 ```javascript
 async getOverrides() {
@@ -584,37 +585,37 @@ async getOverrides() {
 }
 ```
 
-4. Use a list of ERC20s tokens. Change the following line:
+5. Используйте список токенов ERC20s. Измените следующую строку:
 
 ```javascript
 const allowedTokens = require("./eth.json");
 ```
 
-to the following one:
+на эту:
 
 ```javascript
 const allowedTokens = require("./erc20.json");
 ```
 
-### Complete app
+### Законченное приложение
 
-The greeting should now be updatable.
+Теперь приветствие должно быть изменяемым.
 
-1. Type the new greeting in the input box and click on the `Change greeting` button:
+1. Введите новое приветствие в поле для вводе и кликните на кнопку `Change greeting`:
 
 ![img](/start-3.png)
 
-2. Since the `paymasterParams` were supplied, the transaction to be sent is of the `EIP712` type:
+2. Так как параметры `paymasterParams` были предоставлены, отправляемая транзакция будет типа`EIP712`:
 
 ![img](/start-4.png)
 
-3. Click "Sign".
+3. Нажмите "Sign".
 
-After the transaction is processed, the page updates the balances and the new greeting can be viewed:
+После подтверждения транзакции страница обновится и можно будет увидеть обновленные баланс и приветствие:
 
 ![img](/start-5.png)
 
-### Learn more
+### Узнайте больше
 
-- To learn more about `zksync-web3` SDK, check out its [documentation](../../api/js).
-- To learn more about the zkSync hardhat plugins, check out their [documentation](../../api/hardhat).
+- Для дополнительной информации о `zksync-web3` SDK, ознакомьтесь с этой [документацией](https://v2-docs.zksync.io/api/js).
+- Для дополнительной информации о hardhat плагинах zkSync ознакомьтесь с этой [документацией](https://v2-docs.zksync.io/api/hardhat).

@@ -1,3 +1,3 @@
-# Building your own bridge
+# Разработка собственного моста
 
-This section is under development. It will be updated soon.
+СТРАНИЦА В РАЗРАБОТКЕ.

@@ -1,5 +1,5 @@
 # Frontend integration
 
-zkSync 2.0 [natively supports](../zksync-v2/web3.md) Ethereum Web3 JSON RPC API, so most applications should work without modifications. See the [Web3 API Reference](../../api/api.md) for more details about its implementation.
+zkSync 2.0 [нативно поддерживает](../zksync-v2/web3.md) Ethereum Web3 JSON RPC API, так что большинство приложений должны работать без модификаций кода. Смотрите наш [Web3 API Reference](https://v2-docs.zksync.io/api/api.html) для более детальной информации о его реализации.
 
-If you want to use zkSync-specific features, see the [zkSync JS SDK Reference](../../api/js/).
+Если вы хотите использовано функции, специфичные для zkSync, смотрите [zkSync JS SDK Reference](https://v2-docs.zksync.io/api/js/).
