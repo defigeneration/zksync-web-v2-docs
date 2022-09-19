@@ -1,5 +1,5 @@
-# Reporting issues
+# Сообщить о проблеме
 
-Before reporting, please check if your problem is in the list of the [known issues](./known-issues.md) (with suggested workarounds). Our team is already working to resolve them ASAP.
+Перед тем, как сообщить, пожалуйста, проверьте, есть ли ваша проблема в списке [известных проблем](https://v2-docs.zksync.io/dev/testnet/known-issues.html) (с предлагаемыми возможностями решения). Наша команда уже работает над их скорейшим решением.
 
-For all new issues, please notify our team on the [zkSync Discord](https://discord.gg/px2aR7w). We will then share the troubleshooting guide and do our best to resolve the issue in a timely manner.
+По всем новым вопросам, пожалуйста, сообщите нашей команде через [zkSync Discord](https://discord.gg/px2aR7w). Затем мы поделимся руководством по устранению неполадок и сделаем все возможное для своевременного решения вашей проблемы.
