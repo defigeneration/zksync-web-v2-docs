@@ -11,15 +11,15 @@
 
 :::
 
-**zkSync 2.0** is a [ZK rollup](./rollups.md): a trustless protocol that utilises zero-knowledge proofs to provide scalable low-cost transactions on Ethereum. All assets are stored in a single smart contract on the mainchain, while computation and storing data are performed off-chain. As all transactions are proven on Ethereum mainchain, users enjoy the same security level as in Ethereum.
+**zkSync 2.0** - это [ZK rollup](./rollups.md): не требующий доверия протокол, который использует доказательства с нулевым разглашением для обеспечения масштабируемых недорогих транзакций на Ethereum. Все активы хранятся в едином смарт-контракте в основном блокчейне, в то время как расчеты и хранение данных осуществляются вне блокчейна. Так как все транзакции подтверждаются на Ethereum mainchain, пользователи получают тот же уровень безопасности, что и в Ethereum.
 
-### zkSync 2.0 highlights
+### Ключевые особенности zkSync 2.0
 
-- Mainnet-like security with zero reliance on 3rd parties.
-- Permissionless EVM-compatible smart contracts.
-- Standard Web3 API.
-- Preserving key EVM features, such as smart contract composability.
-- Introducing new features, such as account abstraction and meta-transactions.
+- Безопасность как в Mainnet без необходимости полагаться на третьи лица.
+- EVM-совместимые смарт-контракты, не требущие прав доступа.
+- Стандартный Web3 API.
+- Сохранение ключевых элементов EVM, таких как компонуемость смарт-контрактов.
+- Введение новых особенностей, например, абстракция аккаунта и мета-транзакции.
 
 ### How to get started?
 
