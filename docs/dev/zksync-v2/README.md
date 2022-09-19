@@ -1,18 +1,18 @@
-# Understanding zkSync 2.0
+# Понимание zkSync 2.0
 
-zkSync 2.0 is made to look and feel like Ethereum, but with higher throughput and lower fees. However, since it is optimized for zero-knowledge proofs, some differences are inevitable. This section focuses on the specifics of zkSync 2.0.
+zkSync 2.0 создан для того, чтобы выглядеть и ощущаться как Ethereum, но с повышенной пропускной способностью и более низкими коммиссиями. Хотя, так как он (zkSync 2.0) оптимизирован для доказательств с нулевым разглашением(zk-proofs), некоторые различия неизбежны. Этот раздел посвящен специфике zkSync 2.0.
 
-## Table of contents
+## Содержание
 
-- [2.0 Overview](./overview.md)
-- [Contract instantiation](./contracts.md)
-- [Block numbers and time](./blocks-and-time.md)
+- [Обзор 2.0](./overview.md)
+- [Развертывание контракта](./contracts.md)
+- [Время и номер блока](./blocks-and-time.md)
 - [Web3 API](./web3.md)
-- [Handling of ETH and tokens](./handling-of-eth.md)
-- [Fee model](./fee-model.md)
-- [Transaction types](./tx-types.md)
-- [Confirmations and finality](./confirmation-and-finality.md)
-- [Current limitations](./temp-limits.md)
-- [Decentralization roadmap](./decentralization-roadmap.md)
-- [L1/L2 Interoperability](./l1-l2-interop.md)
-- [Bridging funds](./bridging-funds.md)
+- [Взаимодействие с ETH и токенами](./handling-of-eth.md)
+- [Комиссионная модель](./fee-model.md)
+- [Типы транзакций](./tx-types.md)
+- [Подтверждения и финальность](./confirmation-and-finality.md)
+- [Текущие ограничения](./temp-limits.md)
+- [Дорожная карта децентрализации](./decentralization-roadmap.md)
+- [Взаимодействие L1/L2](./l1-l2-interop.md)
+- [Перенос средств](./bridging-funds.md)
