@@ -2,8 +2,8 @@
 
 ## Table of contents
 
-- [Try it out!](./user.md)
-- [Important links](./important-links.md)
-- [Connecting to Metamask](./metamask.md)
-- [Feature support status](./status.md)
-- [Reporting issues](./reporting-issues.md)
+- [Попробуйте!](./user.md)
+- [Важные ссылки](./important-links.md)
+- [Подключение Metamask](./metamask.md)
+- [Статус поддерживаемых функций](./status.md)
+- [Сообщить о проблеме](./reporting-issues.md)
