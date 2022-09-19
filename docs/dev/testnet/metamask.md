@@ -1,14 +1,14 @@
-# Connecting Metamask
+# Подключение Metamask
 
-To connect Metamask to zkSync, add the zkSync alpha testnet network to the wallet.
+Чтобы подключить Metamask к zkSync, добавьте в кошелек сеть zkSync alpha testnet
 
-1. Open the Metamask wallet and click on the network in the top center:
+1. Откройте Metamask и кликните по значку сети в центральной верхенй части интерфейса:
 
 ![img](/connect-1.png)
 
-2. Click on "Add network".
+2. Нажмите "Add network".
 
-3. Fill in the details about zkSync alpha testnet network and click "Save":
+3. Заполните параметры для zkSync alpha testnet network и кликните "Save":
 
 - Network Name: `zkSync alpha testnet`
 - New RPC URL: `https://zksync2-testnet.zksync.dev`
