@@ -1,13 +1,13 @@
 # Начало
 
-::: warning Alpha testnet
+::: Альфа тестнет
 
-Welcome to zkSync 2.0 alpha testnet! Our team would be very happy to see what you can build on zkSync. We are glad for any feedback you could provide!
+Добро пожаловать в zkSync 2.0 alpha testnet! Наша команда будет очень рада увидеть то, что вы сможете построить на zkSync. Также мы рады любой обратной связи, которую вы могли бы предоставить!
 
-Note, that the system is still in active development, so:
+Обратите внимание, что система все еще находится в активной разработке, так что:
 
-- **Breaking changes are possible in the future.**
-- **Some of the updates may require regenesis**, i.e. erasing all the balances, smart contracts, and restarting the blockchain. We will make sure to communicate all regenesis beforehand! Make sure to follow our [Discord](https://discord.gg/px2aR7w).
+- **В будущем возможны незапланированные изменения.**
+- **Некоторые из обновлений могут потребовать регенезиса сети**, т.е. обнуления всех балансов, смарт-контрактов, и перезапуска сети. Мы позаботимся о том, чтобы уведомить вас о регенезисе заблаговременно! Убедитесь, что следите за нами в [Discord](https://discord.gg/px2aR7w).
 
 :::
 
