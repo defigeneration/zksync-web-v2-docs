@@ -1,16 +1,16 @@
-# Feature support status
+# Статус поддерживаемых функций
 
-## Currently supported features
+## Поддерживаемые функции на данный момент
 
-- **Native support of ECDSA signatures.** Unlike the first version of zkSync and most of ZK rollups, no special operation is required to register the user's private key. Any account can be managed on L2 with the same private key that is used on L1.
-- **Solidity 0.8.x and Vyper support.** No need for change or re-audit of the codebase.
-- **Web3 API**. With small exceptions, our API is fully compatible with Ethereum. This enables seamless integration with existing indexers, explorers, etc.
-- **Support for Ethereum cryptographic primitives**. zkSync natively supports `keccak256`, `sha256`, and `ecrecover` via precompiles.
-- **Hardhat plugin**. This allows easy testing and development of smart contracts on zkSync.
-- **L1 <-> L2 smart contract communication**.
+- **Нативная поддержка ECDSA-подписей.** В отличие от первой версии zkSync и большей части ZK-решений, для регистрации закрытого ключа пользователя не требуется никаких специальных операций. Любой учетной записью можно управлять на L2 с тем же закрытым ключом, который используется на L1.
+- **Solidity 0.8.x и Vyper.** Нет необходимости менять код или заново проходить аудиты.
+- **Web3 API**. С небольшими исключениями, наш API полностью совместим с Ethereum. Это позволяет бесшовно интегрироваться с существующими индексаторами, обозревателями и т.д.
+- **Поддержка криптографических примитивов Ethereum**. zkSync нативно поддерживает`keccak256`, `sha256`, и `ecrecover` через предварительную компиляцию (precompiles) .
+- **Hardhat плагин**. Он позволяет легко тестировать и разрабатывать смарт-контракты на zkSync.
+- **L1 <-> L2 коммуникация между смарт-контрактами**.
 
-## Features to be released soon
+## Функции, ожидающие релиза
 
-- **More developer tooling.** Composability between various hardhat plugins with the zkSync plugin, easy local setup with Docker, etc. will be essential for the growth of the ecosystem.
-- **Support for older versions of Solidity.** We are actively working on supporting different versions of Solidity to enable seamless integration for the existing projects.
-- **zkPorter extension.** One of the biggest and most important features. It will let the users choose between high security & 20x fee reduction compared to Ethereum for zkRollup accounts and security much higher than that of a sidechain & near-constant transaction costs of a few USD cents for zkPorter accounts.
+- **Больше инструментов для разрабтчиков.** Компонуемость между различными плагинами Hardhat и плагином zkSync, легкая локальная установка через Docker и т.д. будут необходимы для роста экосистемы.
+- **Поддержка более старых версий Solidity.** Мы активно работаем над поддержкой различных версий Solidity, чтобы обеспечить беспрепятственную интеграцию для существующих проектов.
+- **Расширение zkPorter.** Одна из крупнейших и важнейших функций. Она позволит пользователям выбирать между: высокой безопасностью и 20x снижением комиссий по сравнению с Ethereum для аккаунтов zkRollups, и безопасностью гораздо выше, чем у сайдчейна и почти постоянную стоимость тразакций в несколько центов для аккаунтов zkPorter.
