@@ -1,14 +1,14 @@
-# Important links
+# Важные ссылки
 
-### Faucet, bridge, wallet
+### Кран, мост, кошелек
 
-[zkSync 2.0 Portal](https://portal.zksync.io)
+- [zkSync 2.0 Portal](https://portal.zksync.io/)
 
-### Block explorer
+### Обзреватель блоков
 
-- [Blockscout](https://zksync2-testnet.zkscan.io)
+- [Blockscout](https://zksync2-testnet.zkscan.io/)
 
-### Network info
+### Параметры сети
 
 - Network Name: `zkSync alpha testnet`
 - New RPC URL: `https://zksync2-testnet.zksync.dev`
@@ -20,7 +20,7 @@
 
 - WebSocket URL: `wss://zksync2-testnet.zksync.dev/ws`
 
-### Questions and support
+### Вопросы и поддержка
 
 - [Discord](https://discord.gg/px2aR7w)
-- [Community Forum](https://community.zksync.io/)
+- [Форум сообщества](https://community.zksync.io/)
