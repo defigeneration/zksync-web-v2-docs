@@ -4,7 +4,7 @@
 
 1. Откройте Metamask и кликните по значку сети в центральной верхенй части интерфейса:
 
-![img](/connect-1.png)
+![img](https://v2-docs.zksync.io/connect-1.png)
 
 2. Нажмите "Add network".
 
