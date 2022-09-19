@@ -1,5 +1,5 @@
-# Transaction types
+# Типы транзакций
 
-zkSync supports Ethereum's "legacy" (pre-EIP2718) transaction types, EIP1559 transaction type, and its custom EIP712 transactions. You can use transactions of this type to use zkSync-specific features like account abstraction. Additionally, it is only possible to deploy smart contracts with this type of transaction.
+zkSync поддерживает Эфириумовские "legacy" (pre-EIP2718) типы транзакций, тип транзакций EIP1559 и кастомные транзакции EIP712. Транзакции этого типа можно использовать для таких специфичных функций zkSync, как абстракция аккаунтов. Кроме того, смарт-контракты можно развертывать только с этим видом транзакций.
 
-Knowing the details about the transaction format is not required to use zkSync's SDK, but if you are curious, you can read more about it [here](../../api/api.md#eip712).
+Знать подробности о формате транзакции не требуется для использования SDK zkSync, но если вам интересно, вы можете прочитать об этом [здесь](https://v2-docs.zksync.io/api/api.html#eip712).

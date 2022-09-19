@@ -1,7 +1,7 @@
-# Handling of ETH and tokens
+## Управление ETH и токенами
 
-The previous versions of the testnet allowed users to pay fees with ERC20 tokens. However with the advent of the [paymaster](./aa.md#paymasters) feature it has become redundant. To provide better compatibility and alignment with the L1, zkSync 2.0 allows only ether as a fee token.
+Предыдущие версии тестнета позволяли пользователям оплачивать комиссия токенами ERC20. Однако, с появлением функции [paymaster](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#paymasters) эта возможность стала излишней. Для лучшей совместимости и согласования с L1 zkSync 2.0 позволяет использовать только ETH в качестве платы за газ.
 
-`ETH` is implemented as a special token with address `0x000000000000000000000000000000000000800a`, though zero address (`0x0000000000000000000000000000000000000000`) is often used as an alias for it. It can only be transferred by providing `msg.value`, i.e. the same way it is done on Ethereum and it does _not_ expose the ERC20 contract interface.
+`ETH` реализован как специальный токен с адресом `0x000000000000000000000000000000000000800a`, хотя нулевой адрес (`0x0000000000000000000000000000000000000000`) часто используется как референс для ETH. Он может быть передан только путем предоставления `msg.value`, т.е. таким же образом, как это делается на Эфириуме, и он _не_ разоблачает интерфейс контракта ERC20.
 
-Similar to other rollups, zkSync provides a native ETH bridge, while the rest of the bridges are built using L1<->L2 messaging. The team provides a generic ERC20 token bridge that can be used by anyone for bridging token to L2. More details on the bridges' architecture will be published soon.
+Подобно другим rollup'ам, zkSync обеспечивает собственный мост с Ethereum, в то время как остальные мосты строятся с использованием L1<->L2 сообщений. Команда zkSync предоставляет универсальный мост для токенов ERC20, который может быть использован кем угодно для переноса токенов на L2. Более подробная информация об архитектуре мостов будет опубликована в ближайшее время.

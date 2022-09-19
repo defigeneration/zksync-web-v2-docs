@@ -32,7 +32,7 @@
 
 ## Bootloader
 
-For greater extensibility and to lower the overhead, some parts of the protocol (e.g. account abstraction rules) were moved to an ephemeral contract called _bootloader_. We call it ephemeral since formally it is never deployed and can not be called, but it has a formal [address](https://github.com/matter-labs/v2-testnet-contracts/blob/8de367778f3b7ed7e47ee8233c46c7fe046a75a3/l2/system-contracts/Constants.sol#L19) that is used on `msg.sender`, when it calls other contracts.
+Для большей расширяемости и снижения накладных расходов некоторые части протокола (например, правила абстракции аккаунтов) были перемещены в эфемерный контракт, называемый _bootloader_. Мы называем его эфемерным, поскольку формально он никогда не разворачивается и не может быть вызван, но у него есть [формальный адрес](https://github.com/matter-labs/v2-testnet-contracts/blob/6a93ff85d33dfff0008624eb9777d5a07a26c55d/l2/system-contracts/Constants.sol#L19), который используется на `msg.sender`, когда он вызывает другие контракты.
 
-For now, you do not have to know any details about it, but knowing that it exists is important when you develop using the account abstraction feature. You can always assume that the bootloader is not malicious and it is a part of the protocol. In the future, the code of the bootloader will be made public and any changes to it will also mean an upgrade to the protocol.
+Вам пока нет необходимости знать никаких подробностей о нем, но знание того, что он существует, важно при разработке с использованием функции абстракции аккаунта. Вы всегда можете подразумевать, что загрузчик не является вредоносным и является частью протокола. В будущем код загрузчика будет опубликован, и любые изменения в нем также будут означать обновление протокола.
 

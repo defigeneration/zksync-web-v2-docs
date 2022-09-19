@@ -1,25 +1,22 @@
-# Contract deployment
+# Развертывание контракта
 
-To maintain the same security as L1, the zkSync operator must publish on chain the contract code for each contract it deploys. However, if there are multiple contracts deployed with the same code, it needs to be published only once.
+Для обеспечения той же безопасности, что и на L1, оператор zkSync должен публиковать в сети код для каждого контракта, который он развертывает. Однако, если существует несколько контрактов, развернутых с одним и тем же кодом, его достаточно опубликовать только один раз.
 
-While deploying contracts for the first time may be relatively expensive, factories, which deploy contracts with the same code multiple times, can have huge savings compared to L1.
+Хотя развертывание контракта в первый раз может быть довольно дорогостоящим действием, "фабрики" (factories), которые размещают контракты с одним и тем же кодом несколько раз, могут экономить приличные суммы по сравнению с L1.
 
-All these specifics make the process of deploying smart contracts on zkEVM comply with the major rule: _The operator should know the code of the contract before it is deployed_. This means that deploying contracts is only possible by the means of `EIP712` transactions with the `factory_deps` field contains the supplied bytecode. More on EIP712 transactions [here](../../api/api.md#eip712).
+Все эти особенности делают процесс развертывания смарт-контрактов на zkEVM соответствующим главному правилу: _Оператор должен знать код контракта до его развертывания_. Это означает, что развертывание контрактов возможно только с помощью транзакций типа `EIP712` с полем `factory_deps`, содержащим предоставленный байт-код. Подробнее о транзакциях EIP712 [здесь](https://v2-docs.zksync.io/api/api.html#eip712).
 
-Summary:
+Итого:
 
-- **How deploying contracts works on Ethereum.**
-  To deploy a contract, a user sends a transaction to the zero address (`0x000...000`) with the `data` field of the transaction equal to the contract bytecode concatenated with the constructor parameters.
+- **Как развертывание контрактов работает на Эфириуме.** Для развертывания контракта пользователь отправляет транзакцию на нулевой адрес (`0x000...000`) с заполненным полем `data`, которое будет эквивалентно байт-коду контракта, согласованного с параметрами конструктора.
+- **Как это работает zkSync.** Пользователь вызывает функцию `create` контракта [ContractDeployer](https://v2-docs.zksync.io/dev/zksync-v2/system-contracts.html#contractdeployer) и предоставляет хэш развертываемого контракта вместе с аргументами конструктора. Сам же байт-код контракта предоставляется в поле `factory_deps` транзакции типа EIP712. Если контракт является фабрикой (т.е. может развертывать другие контракты), то байт-коды эти контрактов тоже должны быть включены в `factory_deps.`
 
-- **How deploying contracts works on zkSync.**
-  To deploy a contract, a user calls the `create` function of the [ContractDeployer](./system-contracts.md#contractdeployer) and provides the hash of the contract to be published, as well as the constructor arguments. The contract bytecode itself is supplied in the `factory_deps` field of the EIP712 transactions. If the contract is a factory (i.e. it can deploy other contracts), these contracts' bytecodes should be included in the `factory_deps` as well.
+Весь процесс развертывания проводится внутри нашего плагина [hardhat](https://v2-docs.zksync.io/api/hardhat).
 
-All the deployment process is handled inside our [hardhat](../../api/hardhat) plugin.
+## Различия в поведении `CREATE`
 
-## Differences in `CREATE` behaviour
+Для облегчения поддержки абстракции аккаунта, для каждого аккаунта мы делим nonce на две части: _deployment nonce_ & _transaction nonce._ Deployment nonce - это число контрактов, развернутых аккаунтом с помощью опкода `CREATE,` тогда как transaction nonce используется для защиты транзакций от атак повторного воспроизведения.
 
-For the ease of supporting account abstraction, for each account we split the nonce in two parts: _the deployment nonce_ and _the transaction nonce_. The deployment nonce is the number of contracts the account has deployed with `CREATE` opcode, while the transaction nonce is used for replay attack protection for the transactions.
+Это означает, что в то время как для смарт-контрактов nonce на zkSync ведет себя так же, как и на Ethereum, для EOA-аккаунта вычисление адреса развернутого контракта не так просто. На Ethereum его можно смело рассчитать как `hash(RLP[address,nonce])`, а на zkSync рекомендуется подождать, пока не будет развернут контракт, и поймать событие с адресом нового развернутого контракта. Все это делается в фоновом режиме с помощью SDK.
 
-This means that while for smart contracts the nonce on zkSync behaves the same way as on Ethereum, for EOAs calculating the address of the deployed contract is not as straightforward. On Ethereum, it can be safely calculated as `hash(RLP[address,nonce])`, while on zkSync it is recommended to wait until the contract is deployed and catch the event with the address of the newly deployed contract. All of this is done in the background by the SDK.
-
-In order to gain a deterministic address, you should use `create2`. It is available for EOAs as well, but it is not available in the SDK yet.
+Чтобы получить детерминированный адрес, вам нужно использовать `create2`. Он доступен и для EOA-аккаунтов, но пока не доступен в SDK.

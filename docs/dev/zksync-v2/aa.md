@@ -1,127 +1,117 @@
-# Important: Account abstraction support
+# Важно: поддержка абстракции аккаунта
 
-## Introduction
+## Введение
 
-On Ethereum, there are two types of accounts: externally owned accounts (EOAs) and smart contracts. The former type is the only one that can initiate transactions, 
-while the latter is the only one that can implement arbitrary logic. For some use-cases, like smart-contract wallets or privacy protocols, this difference can creates a lot of friction.
-As a result they require L1 relayers, e.g. an EOA to help facilitate transactions from a smart-contract wallet.
+В Эфириуме существует два типа аккаунтов: аккаунты, находящиеся во внешнем владении (ЕОА), и смарт-контракты. Только первый тип может инициировать транзакции, в то время как только второй может реализовывать произвольную логику. Для некоторых случаев использования, таких как кошельки в виде смарт-контрактов или протоколы конфиденциальности, эта разница может создавать много трений. В результате они требуют ретрансляторов L1, то есть EOA, чтобы облегчить транзакции из смарт-контракт-кошелька.
 
-Accounts in zkSync 2.0 can initiate transactions, like an EOA, but can also have arbitrary logic implemented in them, like a smart contract. This feature is called "account abstraction" and it is aimed to resolve the issues described above.
+Аккаунты в zkSync 2.0 могут инициировать транзакции, как EOA, но и также могут иметь имплементированную произвольную логику, как смарт-контракт. Эта функция называется "абстракция аккаунта" и направлена она на решение проблем, описанных выше.
 
-::: warning Unstable feature
+::: warning Нестабильная функция
 
-This is the test release of account abstraction (AA) on zkSync 2.0. We are very happy to hear your feedback! Please note: **breaking changes to the API/interfaces required for AA should be anticipated.**
+Это тестовая реализация абстракции аккаунта (AA) на zkSync 2.0. Мы будем рады получить от вас обратную связь! Пожалуйста, учтите: **следует ожидать значительных изменений в API/интерфейсах, необходиых для АА.**
 
-zkSync 2.0 is one of the first EVM-compatible chains to adopt AA, so this testnet is also used to see how "classical" projects from EVM chains can coexist with the account abstraction feature.
+zkSync 2.0 одна из первых EVM-совместимых сетей, адаптирующих АА, так что данный тестнет используется в том числе и для наблюдения за тем, как "классические" проекты из EVM-сетей сосуществуют с функцией абстракции аккаунта.
 
 :::
 
-## Design
+## Дизайн
 
-The account abstraction protocol on zkSync is in spirit very similar to [EIP4337](https://eips.ethereum.org/EIPS/eip-4337), though our protocol is still different for the sake of efficiency and better UX.
+Протокол абстракции аккаунта на zkSync по духу очень близок к [EIP4337](https://eips.ethereum.org/EIPS/eip-4337), хотя наш протокол по-прежнему реализован иначев угоду эффективности и лучшему пользовательскому опыту.
 
-### IAccount interface
+### IAccount интерфейс
 
-Each account is recommended to implement the [IAccount](https://github.com/matter-labs/v2-testnet-contracts/blob/main/zksync/system-contracts/interfaces/IAccount.sol) interface. It contains the following five methods:
+Для каждого аккаунта рекомендуется реализация интерфейса [IAccount.](https://github.com/matter-labs/v2-testnet-contracts/blob/main/zksync/system-contracts/interfaces/IAccount.sol) Он включает себя следующие 5 методов:
 
-- `validateTransaction` is mandatory and will be used by the system to determine if the AA logic agrees to proceed with the transaction. In case the transaction is not accepted (e.g. the signature is wrong) the method should revert. In case the call to this method succeedes, the implemented account logic is considered to accept the transaction, and the system will proceed with the transaction flow.
-- `executeTransaction` is mandatory and will be called by the system after the fee is charged from the user. This function should perform the execution of the transaction.
-- `payForTransaction` is optional and will be called by the system if the transaction has no paymaster, i.e. the account is willing to pay for the transaction. This method should be used to pay for the fees by the account. Note, that if your account will never pay any fees and will always rely on the [paymaster](#paymasters) feature, you don't have to implement this method. This method must send at least `tx.gasprice * tx.ergsLimit` ETH to the [bootloader](./system-contracts.md#bootloader) address.
-- `prePaymaster` is optional and will be called by the system if the transaction has a paymaster, i.e. there is a different address that pays the transaction fees for the user. This method should be used to prepare for the interaction with the paymaster. One of the notable [examples](#approval-based-paymaster-flow) where it can be helpful is to approve the ERC-20 tokens for the paymaster.
-- `executeTransactionFromOutside`, technically, is not mandatory, but it is _highly encouraged_, since there needs to be some way, in case of priority mode (e.g. if the operator is unresponsive), to be able to start transactions from your account from ``outside'' (basically this is the fallback to the standard Ethereum approach, where an EOA starts transaction from your smart contract).
+- `validateTransaction` - обязательный метод, используется системой для определения соглашается ли логика АА провести транзакцию. В случае непринятия транзакции (например, подпись неверная) метод должен сделать отмену. В случае успешного вызова этого метода, реализованная логика аккаунта должна принять транзакцию и система продолжит ее исполнение.
+- `executeTransaction` - обязательный метод, вызывается системой после снятия комиссии с пользователя. Эта функция выполняет исполнение транзакции.
+- `payForTransaction` - опциональный метод, вызывается системой если у транзакции нет paymaster'a, т.е. аккаунт хочет заплатить за транзакцию. Этот метод следует использовать для оплаты аккаунтом комиссий. Примите во внимание, что если ваш аккаунт никогда не будет платить комиссий и всегда будет полагаться на функцию [paymaster](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#paymasters), то вам не нужно внедрять этот метод. Этот метод должен отправлять как минимум `tx.gasprice * tx.ergsLimit` ETH в пользу [bootloader](https://v2-docs.zksync.io/dev/zksync-v2/system-contracts.html#bootloader) адреса.
+- `prePaymaster` - опциональный метод, вызывается системой если у транзакции есть paymaster, т.е. есть другой адрес, который оплачивает транзакционные комиссии за пользователя. Этот метод следует использовать для подготовки ко взаимодействию с paymaster. Один из замечательных [примеров](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#approval-based-paymaster-flow), где это может быть полезно - это одобрение траты ERC-20 Токенов для paymaster'a.
+- `executeTransactionFromOutside` - технически, не обязательный, но _строго рекомендуемый метод_, так как должен быть какой-то способ, в случае приоритетного режима (например, оператор не отвечает), запускать транзакции "извне" (по сути, это откат к стандартному Эфириумовскому подходу, где ЕОА инициирует транзакцию из смарт-контракта).
 
-### IPaymaster interface
+### IPaymaster интерфейс
 
-Like the original EIP4337, our account abstraction protocol supports paymasters: accounts that can compensate for other accounts' transactions execution. You can read more about them [here](#paymasters).
+Каждый paymaster должен применять интерфейс [IPaymaster](https://github.com/matter-labs/v2-testnet-contracts/blob/main/zksync/system-contracts/interfaces/IPaymaster.sol). Он включает себя 2 следующих метода:
 
-Each paymaster should implement the [IPaymaster](https://github.com/matter-labs/v2-testnet-contracts/blob/main/zksync/system-contracts/interfaces/IPaymaster.sol) interface. It contains the following two methods:
+- `validateAndPayForPaymasterTransaction` - обязательный метод, используется системой для определения одобряет ли paymaster оплату данной транзакции. Если paymaster будет оплачивать транзакцию, то этот метод должен отправить как минимум `tx.gasprice * tx.ergsLimit` ETH в пользу оператора. Он должен вернуть `context,` который будет являться одним из параметров вызова метода `postOp.` &#x20;
+- `postOp` - опциональный метод и вызывается после исполнения транзакции. Заметьте, несмотря на оригинаться EIP4337, _нет гарантий, что этот метод будет вызван_. В частности, данный метод не будет вызван, если транзакция провалится с ошибкой `out of gas`. Он (метод) принимает в себя 4 параметра: `context` возвращенный методом `validateAndPayForPaymasterTransaction`; саму транзакцию; было ли исполнение транзакции успешным; и максимальной количество `ergs`, которое можно компенсировать paymaster'у. Более подробная документация по компенсациям будет доступна, как только их поддержка будет добавлена в zkSync.
 
-- `validateAndPayForPaymasterTransaction` is mandatory and will be used by the system to determine if the paymaster approves paying for this transaction. If the paymaster is willing to pay for the transaction, this method must send at least `tx.gasprice * tx.ergsLimit` to the operator. It should return the `context` that will be one of the call parameters to the `postOp` method.
-- `postOp` is optional and will be called after the transaction has been executed. Note, that unlike the original EIP4337, there *is no guarantee that this method will be called*. In particular, this method won't be called if the transaction has failed with `out of gas` error. It takes four parameters: the context returned by the `validateAndPayForPaymasterTransaction` method, the transaction itself, whether the execution of the transaction succeeded, and also the maximum amount of ergs the paymaster might be refunded with. More documentation on refunds will be available once their support is added to zkSync.
+### `Reserved` поля специального назначения в конструкции `Transaction`
 
-### Reserved fields of the `Transaction` struct with special meaning
+Примите во внимание, что каждый из вышеописанных методов принимает стуктуру [Transaction](https://github.com/matter-labs/v2-testnet-contracts/blob/0e1c95969a2f92974370326e4430f03e417b25e7/l2/system-contracts/TransactionHelper.sol#L15). В то время как некоторые из его полей говорят сами за себя, существует еще 6 `reserved` полей, значение каждого из которых отпределяются типом транзакции. Мы решили не давать этим полям названий, так как они могут быть лишними для некоторых будущих типов транзакций. На данный момент:
 
-Note that each of the methods above accepts the [Transaction](https://github.com/matter-labs/v2-testnet-contracts/blob/0e1c95969a2f92974370326e4430f03e417b25e7/l2/system-contracts/TransactionHelper.sol#L15) struct. 
-While some of its fields are self-explanatory, there are also 6 `reserved` fields, the meaning of each is defined by the transaction's type. We decided to not give these fields names, since they might be unneeded in some future transaction types. For now, the convention is:
+- `reserved[0]` - поле для nonce.
+- `reserved[1]` - поле для `msg.value` , которое должно быть передано с транзакцией.
 
-- `reserved[0]` is the nonce.
-- `reserved[1]` is `msg.value` that should be passed with the transaction.
+### Порядок исполнения транзакции
 
-### The transaction flow
+Каждая тразакция исполняется по определенному порядку:
 
-Each transaction goes through the following flow:
+#### Этап валидации
 
-#### The validation step
+На этапе валидации аккаунт должен решить, принимает ли он транзакцию, и если да, то оплатить комиссию за нее. Если любой из элементов валидации проваливается, комиссия с аккаунта не взимается и данная транзакция не может быть включена в блок.
 
-During the validation step, the account should decide whether it accepts the transaction and if so, pay the fees for it. If any part of the validation fails, the account is not charged a fee, and such transaction can not be included in a block.
+**Шаг 1.** Система вызывает метод аккаунта `validateTransaction`. Если он не отменяется, переходим ко второму шагу.
 
-**Step 1.** The system calls the `validateTransaction` method of the account. If it does not revert, proceed to the second step.
+**Шаг 2 (без paymaster).** Система вызывает метод аккаунта `payForTransaction`. Если он не отменяется, переходим к третьему шагу.
 
-**Step 2 (no paymaster).** The system calls the `payForTransaction` method of the account. If it does not revert, proceed to the third step.
+**Шаг 2 (с paymaster).** Система вызывает метод отправителя `prePaymaster` . Если он не отменяется, далее вызывается метод paymaster'a `validateAndPayForPaymasterTransaction.` Если он тоже не отменяется, то переходим к третьему шагу.
 
-**Step 2 (paymaster).** The system calls the `prePaymaster` method of the sender. If this call does not revert, then the `validateAndPayForPaymasterTransaction` method of the paymaster is called. If it does not revert too, proceed to the third step.
+**Шаг 3.** Система проверяет, получил ли bootloader как минимум `tx.ergsPrice * tx.ergsLimit` ETH. Если результат положительный, то верификация считается пройденной и мы можем перейти к следующему этапу.
 
-**Step 3.** The system verifies that the bootloader has received at least `tx.ergsPrice * tx.ergsLimit` ETH to the bootloader. If it is the case, the verification is considered complete and we can proceed to the next step.
+#### Этап исполнения
 
-#### The execution step
+Этап исполнения отвечает за само исполнение транзакции и возврат неиспользованного ergs назад пользователю. Если на этом этапе есть какие-либо отмены, то транзакция все равно считаете валидной и будет включена в блок.
 
-The execution step is considered responsible for the actual execution of the transaction and sending the refunds for any unused ergs back to the user. If there is any revert on this step, the transaction is still considered valid and will be included in the block.
+**Шаг 4.** Система вызвает метод аккаунта `executeTransaction.`
 
-**Step 4.** The system calls the `executeTransaction` method of the account.
+**Шаг 5. (только в случае, если у транзакции есть paymaster)** Вызывается метод paymaster'a `postOp`. Этот шаг следует использовать для компенсации неиспользованного ergs отправителю в случае если paymaster использовался для оплаты транзакций в токенах ERC-20.
 
-**Step 5. (only in case the transaction has a paymaster)** The `postOp` method of the paymaster is called. This step should typically be used for refunding the sender the unused ergs in case the paymaster was used to facilitate paying fees in ERC-20 tokens.
+### Комиссии
 
-### Fees
+В EIP4337 вы можете найти 3 типа газовых лимитов: `verificationGas`, `executionGas`, `preVerificationGas`, которые описывают газовые лимиты для разных этапов включения транзакции в блок. В zkSync только одно поле `ergsLimit`, которое покрывает комиссию для всех трех. При отправке транзакции убедитесь, что значение `ergsLimit` достаточно для покрытия издержек за верификацию, оплату комиссии (упомянутый выше ERC20 трансфер), и само исполнение.
 
-In EIP4337 you can see three types of gas limits: `verificationGas`, `executionGas`, `preVerificationGas`, that describe the gas limit for the different steps of the transaction inclusion in a block.
-zkSync has only a single field, `ergsLimit`, that covers the fee for all three. When submitting a transaction, make sure that `ergsLimit` is enough to cover verification, paying the fee (the ERC20 transfer mentioned above), and the actual execution itself.
+По умолчанию, вызов `estimateGas` добавляет константу, включающую расчет комиссии и верификацию подписи для ЕОА-аккаутов.
 
-By default, calling `estimateGas` adds a constant to cover charging the fee and the signature verification for EOA accounts.
+## Расширенный функционал EIP4337
 
-## Extending EIP4337
+Для обеспечения защиты оператора от DoS  оригинальный EIP4337 накладывает несколько [ограничений](https://eips.ethereum.org/EIPS/eip-4337#simulation) на этапе валидации аккаунта. Большинство из них, особенно в отношении запрещенных опкодов все еще актуальны. Однако, некоторые ограничения были сняты для лучшего пользовательского опыта.
 
-To provide DoS protection for the operator, the original EIP4337 imposes several [restrictions](https://eips.ethereum.org/EIPS/eip-4337#simulation) on the validation step of the account. Most of them, especially regarding the forbidden opcodes are still relevant. However, several restrictions have been lifted for better UX.
+### Расширенный список разрешенных опкодов
 
-### Extending the allowed opcodes
+- Разрешены методы вызова контрактов `call`/`delegateCall`/`staticcall` которые уже были развернуты. В отличие от Эфириума, у нас нет возможности отредактировать уже развернутый код или удалить контракт через selfdestruct, так что мы можем быть уверены, что код контракта во время исполнения всегда будет одним и тем же.
 
-- It is allowed to `call`/`delegateCall`/`staticcall` contracts that were already deployed. Unlike Ethereum, we have no way to edit the code that was deployed or delete the contract via selfdestruct, so we can be sure that the code during the execution of the contract will be the same.
+### Расширенный набор слотов в хранилище, принадлежащих пользователю
 
-### Extending the set of slots that belong to a user
+В оригинальном EIP, этап `validateTransaction`  абстрагированного аккаунта позволяет аккаунту читать только слоты хранилища, принадлежащие ему самому. Однако существуют слоты, которые _семантически_ принадлежат данному пользователю, а по факту расположены  в адресах других контрактов. Яркий пример - баланс `ERC20`.
 
-In the original EIP, the `validateTransaction` step of the AA allows the account to read only the storage slots of its own. However, there are slots that *semantically* belong to that user but are actually located on another contract’s addresses. A notable example is `ERC20` balance.
+Это ограничение обеспечивает защиту от DDoS путем обеспечения уверенности в том, что слоты, используемые для валидации разными аккаунтами _не пересекаются,_ таким образом, для них нет необходимости _фактически_ принадлежать хранилищу аккаунта.
 
-This limitation provides DDoS safety by ensuring that the slots used for validation by various accounts *do not overlap*, so there is no need for them to *actually* belong to the account’s storage.
+Для включения возможности чтения пользовательского баланса или allowance ERC20 на этапе валидации, следующие типы слотов будут доступны для аккаунта с адресом `A` на этапе валидации:
 
-To enable reading the user's ERC20 balance or allowance on the validation step, the following types of slots will be allowed for an account with address `A` on the validation step:
+1. Слот, принадлежащий адресу `A`.
+2. Слоты `A` на любых других адресах.
+3. Слоты типа `keccak256(A || X)` на любых других адресах (покрывают `mapping(address => value)`, которые обычно используется для баланса в токенах ERC20.
+4. Слоты типа `keccak256(X || OWN)` на любых других адресах, где `OWN` - это слот предыдущего (3го) типа (покрывают `mapping(address ⇒ mapping(address ⇒ uint256))` , которые обычно используется для `allowances` в токенах ERC20.
 
-1. Slots that belong to address `A`.
-2. Slots `A` on any other address.
-3. Slots of type `keccak256(A || X)` on any other address. (to cover `mapping(address => value)`, which is usually used for balance in ERC20 tokens.
-4. Slots of type `keccak256(X || OWN)` on any other address, where `OWN` is some slot of the previous (third) type (to cover `mapping(address ⇒ mapping(address ⇒ uint256))` that are usually used for `allowances` in ERC20 tokens.
+### Что еще может стать доступным в будущем?
 
-### What could be allowed in the future?
+В будущем мы даже можем добавить транзакции с привязкой ко времени, например позволив проверять, возвращает ли `block.timestamp <= value` результат `false`, и подобные. Это потребует развертывания отдельной библиотеки таких доверенных методов, но это значительно увеличить возможности аккаунтов.
 
-In the future, we might even allow time-bound transactions, e.g. allow checking that `block.timestamp <= value` if it returned `false`, etc. This would require deploying a separate library of such trusted methods, but it would greatly increase the capabilities of accounts.
+## Создание кастомных аккаунтов
 
-## Building custom accounts
+Как уже было упомянуто, в каждом аккаунте должен быть реализован интерфейс [IAccount](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#iaccount-interface).
 
-As already mentioned above, each account should implement the [IAccount](#iaccount-interface) interface. 
-
-An example of the implementation of the AA interface is the [implementation](https://github.com/matter-labs/v2-testnet-contracts/blob/6a93ff85d33dfff0008624eb9777d5a07a26c55d/l2/system-contracts/DefaultAA.sol#L16) of the EOA account. 
-Note that this account, just like standard EOA accounts on Ethereum, successfully returns empty value whenever it is called by an external address, while this may not be the behaviour that you would like for your account.
+Пример реализации интерфейса АА - [реализация](https://github.com/matter-labs/v2-testnet-contracts/blob/6a93ff85d33dfff0008624eb9777d5a07a26c55d/l2/system-contracts/DefaultAA.sol#L16) ЕОА аккаунта. Учтите, что этот аккаунт, прямо как стандартный ЕОА-аккаунт ан Эфириуме, успешно возвращает пустое значение всякий раз, когда его вызывает внешний адрес, в то время как это не совсем то, чего вы хотите для своего аккаунта.
 
 ### EIP1271
 
-If you are building a smart wallet, we also _highly encourage_ you to implement the [EIP1271](https://eips.ethereum.org/EIPS/eip-1271) signature-validation scheme. 
-This is the standard that is endorsed by the zkSync team. It is used in the signature-verification library described below in this section.
+Если вы строите смарт-кошелек, мы настоятельно рекомендуем вам реализовать схему валидации подписи (signature-validation) [EIP1271](https://eips.ethereum.org/EIPS/eip-1271). Это стандарт, продвигаемый командой zkSync. Он используется в библиотеке signature-validation, описанной далее в этом разделе.
 
-### The deployment process
+### Процесс развертывания
 
-The process of deploying account logic is very similar to the one of deploying a smart contract. 
-In order to protect smart contracts that do not want to be treated as an account, a different method of the deployer system contract should be used to do it. 
-Instead of using `create`/`create2`, you should use the `createAccount`/`create2Account` methods of the deployer system contract.
+Процесс развертывания логики учетных записей очень похож на процесс развертывания смарт-контракта. Для защиты смарт-контрактов, которые не хотят быть классифицированы как аккаунт, необходимо использовать иной метод системного контракта 'deployer'. Вместо использования `create`/`create2` вам нужно использовать метод `createAccount`/`create2Account` системного контракта deployer.
 
-Here is an example of how to deploy account logic using the `zksync-web3` SDK:
+Вот пример, как развернуть логику аккаунта с помощью `zksync-web3` SDK:
 
 ```ts
 import { ContractFactory } from "zksync-web3";
@@ -131,35 +121,34 @@ const aa = await contractFactory.deploy(...args);
 await aa.deployed();
 ```
 
-### Limitations of the verification step
+### Ограничения на этапе верификации
 
-::: warning Not implemented yet
+::: warning Еще не реализовано
 
-The verification rules are not fully enforced right now. Even if your custom account works right now, it might stop working in the future if it does not follow the rules below.
+Правила верификации пока не требуют полного соблюдения. Даже если ваш кастомный аккаунт сейчас работает нормально, он может перестать работать в будущем, если он не соответствует правилам ниже
 
 :::
 
-In order to protect the system from a DoS threat, the verification step must have the following limitations:
+Для защиты системы от угрозы DoS этап верификации должен следовать следующим ограничениям:
 
-- The account logic can only touch slots that belong to the account. Note, that the [definition](#extending-the-set-of-slots-that-belong-to-a-user) is far beyond just the slots that are at the users' address.
-- The account logic can not use context variables (e.g. `block.number`).
-- It is also required that your account increases the nonce by 1. This restriction is only needed to preserve transaction hash collision resistance. In the future, this requirement will be lifted to allow more generic use-cases (e.g. privacy protocols).
+- Логика аккаунта может взаимодействовать только со слотами хранилища, принадлежащими данному аккаунту. Учтите, что [определение принадлежности](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#extending-the-set-of-slots-that-belong-to-a-user) выходит далеко за рамки слотов на адресе пользователя.
+- Логика аккаунта не может использовать контекстные переменные (напр. `block.number`)
+- Также необходимо, чтобы nonce аккаунта увеличивался на 1. Это ограничение нужно только для того, чтобы сохранить хэш транзакции резистентным к коллизии. В будущем это требование будет убрано для возможности реализации более общих вариантов использования (например, протоколов приватности)
 
-Transactions that violate the rules above will not be accepted by the API, though these requirements can not be enforced on the circuit/VM level and do not apply to L1->L2 transactions.
+Транзакции, нарушающие вышеперечисленные правила, не будут приняты API, хотя эти требования не могут быть навязаны на уровне сети/VM и неприменимы к транзакциям L1>L2.
 
-To let you try out the feature faster, we decided to release account abstraction publicly before fully implementing the limitations' checks for the verification step of the account. 
-Currently, your transactions may pass through the API despite violating the requirements above, but soon this will be changed.
+Чтобы позволить вам как можно быстрее опробовать функцию, мы решили публично выпустить абстракцию аккаунта, прежде чем полностью реализовать проверки ограничений на этапе верификации аккаунта. 
+В настоящее время ваши транзакции могут проходить через API, несмотря на нарушения вышеуказанных правил, но вскоре это будет изменено.
 
-### Nonce holder contract
+### Контракт Nonce holder
 
-For optimization purposes, both [tx nonce and the deployment nonce](./contracts.md#differences-in-create-behaviour) are put in one storage slot inside the [NonceHolder](./system-contracts.md#inonceholder) system contracts. 
-In order to increment the nonce of your account, it is highly recommended to call the [incrementNonceIfEquals](https://github.com/matter-labs/v2-testnet-contracts/blob/0e1c95969a2f92974370326e4430f03e417b25e7/l2/system-contracts/interfaces/INonceHolder.sol#L10) function and pass the value of the nonce provided in the transaction.
+В целях оптимизации, и[ nonce транзакции и nonce развертывания](https://v2-docs.zksync.io/dev/zksync-v2/contracts.html#differences-in-create-behaviour) сохраняются в один слот хранилища внтури системного контракта [NonceHolder](https://v2-docs.zksync.io/dev/zksync-v2/system-contracts.html#inonceholder). Для увеличения nonce вашего аккаунта крайне рекомендуется вызывать функцию [incrementNonceIfEquals](https://github.com/matter-labs/v2-testnet-contracts/blob/0e1c95969a2f92974370326e4430f03e417b25e7/l2/system-contracts/interfaces/INonceHolder.sol#L10) и передать значение nonce, предоставленное в транзакции.
 
-This is one of the whitelisted calls, where the account logic is allowed to call outside smart contracts.
+Это один из разрешенных вызовов, в котором логике аккаунта позволяется вызывать внешние смарт-контракты.
 
-### Sending transactions from an account
+### Отправка транзакций с аккаунта
 
-For now, only EIP712 transactions are supported. To submit a transaction from a specific account, you should provide the `from` field of the transaction as the address of the sender and the `customSignature` field of the `customData` with the signature for the account.
+На данный момент поддерживаются только транзакции типа EIP712. Чтобы отправить транзакцию с конкретного аккаунта, вам нужно ввести в поле `from` адрес отправителя, а в поле `customSignature` (часть `customData`) - подпись для аккаунта.
 
 ```ts
 import { utils } from "zksync-web3";
@@ -178,49 +167,47 @@ const sentTx = await zksyncProvider.sendTransaction(serializedTx);
 
 ## Paymasters
 
-Paymasters are accounts that can compensate for other accounts' transactions. Imagine being able to pay fees for users of your protocol! The other important use-case of paymasters is to facilitate paying fees in ERC20 tokens. While ETH is the main token of zkSync, paymasters can provide the ability to exchange ERC20 tokens to ETH on the fly.
+Paymaster - это аккаунт, который может компенсировать затраты на транзакции других аккаунтов. Представьте возможность оплачивать транзакции за пользователей вашего протокола! Другим важным вариантов использования paymaster является способствование оплате комиссий в токенах ERC20. Хоть ETH и является главным токеном zkSync, paymaster'ы могут предоставить возможность обменивать токены ERC20 на ETH "на лету".
 
-If users want to interact with a paymaster, they should provide the non-zero `paymaster` address in their EIP712 transaction. The input data to the paymaster is provided in the `paymasterInput` field of the paymaster.
+Если пользователь захочет взаимодействовать с paymaster'ом, ему нужно предоставить ненулевой адрес `paymaster`'a в своей транзакции типа EIP712. Вводные данные для paymaster'a предоставляются в его поле `paymasterInput.
 
-### Paymaster verification rules
+### Правила верификации для Paymaster
 
 
-::: warning Not implemented yet
+::: warning Еще не реализовано
 
-The verification rules are not fully enforced right now. Even if your paymaster works right now, it might stop working in the future if it does not follow the rules below.
+Правила верификации пока не требуют полного соблюдения. Даже если ваш paymaster сейчас работает нормально, он может перестать работать в будущем, если он не будет соответствовать правилам ниже.
 
 :::
 
-Since multiple users should be allowed to access the same paymaster, malicious paymasters *can* do a DoS attack on our system. To work around this, a system similar to the [EIP4337 reputation scoring](https://eips.ethereum.org/EIPS/eip-4337#reputation-scoring-and-throttlingbanning-for-paymasters) will be used.
+В отличие от оригинального EIP, paymaster'ы могут взаимодействовать с любыми слотами хранилища. Кроме того, paymaster не будет заторможен, если одно из следующих утверждений верно:
 
-Unlike in the original EIP, paymasters are allowed to touch any storage slots. Also, the paymaster won't be throttled if either of the following is true:
+- Прошло более чем `X` минут с момента прохождения верификации на API-узлах. (Точное значение `X` будет определено в будущем).
+- Порядок считываемых слотов такой же, как и при запуске API-узла и первый слот, значение которого изменилось, является одним из слотов пользователя. Это необходимо для защиты paymaster'a от вредоносных пользователей (например, пользователь мог отозвать разрешение на трату токена ERC20).
 
-- More than `X` minutes have passed since the verification has passed on the API nodes. (The exact value of `X` will be defined later).
-- The order of slots being read is the same as during the run on the API node and the first slot whose value has changed is one of the user's slots. This is needed to protect the paymaster from malicious users (e.g. the user might have erased the allowance for the ERC20 token).
+### Встроенные порядки исполнения paymaster'a
 
-### Built-in paymaster flows
+В то время как некоторые paymaster'ы могут тривиально работать без какого-либо взаимодействия со стороны пользователямей (например, протокол, который всегда оплачивает комиссию за своих пользователей), другие требуют активного участия от отправителя транзакции. Примечательным примером является paymaster, который обменивает пользовательские токены ERC20 на ETH, так как он требует от пользователя установить необходимое разрешение на трату для paymaster'a.
 
-While some paymasters can trivially operate without any interaction from users (e.g. a protocol that always pays fees for their users), some require active participation from the transaction's sender. A notable example is a paymaster that swaps users' ERC20 tokens to ETH as it requires the user to set the necessary allowance to the paymaster.
+Протокол абстракции аккаунтов сам по себе является универсальным и позволяет как аккаунтам, так и paymaster'aм реализовывать произвольные взаимодействия. Однако код обычных аккаунтов (ЕОА) является постоянным, но мы все еще хотим, чтобы они могли участвовать в экосистеме кастомных аккаунтов и paymaster'ов. Поэтому мы стандартизировали поле транзакции `paymasterInput`, чтобы охватить наиболее распространенные варианты использования функции paymaster.
 
-The account abstraction protocol by itself is generic and allows both accounts and paymasters to implement arbitrary interactions. However, the code of default accounts (EOAs) is constant, but we still want them to be able to participate in the ecosystem of custom accounts and paymasters. That's why we have standardized the `paymasterInput` field of the transaction to cover the most common uses-cases of the paymaster feature. 
+Ваши аккаунты свободны в вопросе реализации поддержки этих порядков исполнения. Тем не менее, настоятельно рекомендуется сохранить интерфейс одинаковым как для ЕОА, так и для кастомных аккаунтов.
 
-Your accounts are free to implement or not implement the support for these flows. However, this is highly encouraged to keep the interface the same for both EOAs and custom accounts.
+#### Обычный порядок исполнения Paymaster
 
-#### General paymaster flow
+Следует использовать, если нет нужды в предварительных действиях со стороны пользователя для работы paymaster'a.
 
-It should be used if no prior actions are required from the user for the paymaster to operate. 
-
-The `paymasterInput` field must be encoded as a call to a function with the following interface: 
+Поле `paymasterInput` должно кодироваться как вызов функции со следующим интерфейсом:
 
 ```solidity
 function general(bytes calldata data);
-``` 
+```
 
-EOA accounts will do nothing and the paymaster can interpret this `data` in any way.
+EOA-аккаунты ничего не будут делать и paymaster может интерпретировать эту `data` любым способом.
 
-#### Approval-based paymaster flow
+#### Approval-based порядок исполнения Paymaster
 
-It should be used if the user is required to set certain allowance to a token for the paymaster to operate. The `paymasterInput` field must be encoded as a call to a function with the following signature:
+Следует использовать, если от пользователя требуетя установить конкретное разрешение на трату токена для работы paymaster'a. Поле `paymasterInput` должно быть закодировано как вызов функции со следующей подписью:
 
 ```solidity
 function approvalBased(
@@ -230,40 +217,39 @@ function approvalBased(
 )
 ```
 
-The EOA will ensure that the allowance of the `_token` towards the paymaster is set to at least `_minAllowance`. The paymaster is free to interpret the `_innerInput` however it wants to.
+ЕОА убеждается, что разрешение на трату `_token`'a в пользу paymaster'a установлено как минимум на значении `_minAllowance.` Paymaster может интерпретировать `_innerInput` как ему угодно.
 
-If you are developing a paymaster, you *should not* trust the transaction sender to honestly behave (e.g. provide the required allowance with the `approvalBased` flow). These flows serve mostly as instructions to EOAs and the requirements should always be double-checked by the paymaster.
+Если вы разрабатываете paymaster, вам _не следует_ верить __ в честное поведение __ отправителя транзакции (например, предоставлять требуемоу разрешение на трату вместе с порядком исполнения `approvalBased`)
 
-#### Working with paymaster flows using `zksync-web3` SDK
+#### Работа с порядком исполнения paymaster с использованием `zksync-web3` SDK
 
-The `zksync-web3` SDK provides [methods](../../api/js/utils.md#encoding-paymaster-params) for encoding correctly formatted paymaster params for all of the built-in paymaster flows.
+`zksync-web3` SDK предоставляет [методы](https://v2-docs.zksync.io/api/js/utils.html#encoding-paymaster-params) кодировки корректно отформатированных параметров paymaster'a для все встроенных сценариев исполнения paymaster'a.
 
 ### Testnet paymaster
 
-To let users experience using with paymasters on testnet, as well as to keep supporting paying fees in ERC20 tokens, the Matter Labs team provides the testnet paymaster, that enables paying fees in ERC20 token at a 1:1 exchange rate with ETH (i.e. one unit of this token is equal to 1 wei of ETH).
+Чтобы позволить пользователям попрактиковаться с paymaster'ами на testnet, а также продолжить поддержку оплаты комиссий в токенах ERC20, команда Matter Labs предоставляет testnet paymaster'a, который позволяет оплачивать комиссии в ERC20-токенах по курсу 1:1 к ETH (т.е. одна единица этого окена равна 1 wei ЕТН).
 
-The paymaster supports only the [approval based](#approval-based-paymaster-flow) paymaster flow and requires that the `token` param is equal to the token being swapped and `minAllowance` to equal to least `tx.maxFeePerErg * tx.ergsLimit`. 
+Paymaster поддерживает только [approval-based](https://v2-docs.zksync.io/dev/zksync-v2/aa.html#approval-based-paymaster-flow) порядок исполнения paymaster'ов и требует, чтобы параметр `token` был равен обмениваемому токену, а `minAllowance` был равен как минимум `tx.maxFeePerErg * tx.ergsLimit`.
 
-An example of how to use testnet paymaster can be seen in the [hello world](../guide/hello-world.md#paying-fees-using-testnet-paymaster) tutorial.
+Пример использования testnet paymaster можно увидеть в руководстве [hello world](https://v2-docs.zksync.io/dev/guide/hello-world.html#paying-fees-using-testnet-paymaster).
 
 ## `aa-signature-checker`
 
-Your project can start preparing for native AA support. We highly encourage you to do so, since it will allow you to onboard hundreds of thousands of users (e.g. Argent users that already use the first version of zkSync). 
-We expect that in the future even more users will switch to smart wallets.
+Ваш проект может начать подготовку к нативной поддержке АА. Мы настоятельно рекомендуем вам заняться этим, так как это позволит вам принять сотни тысяч пользователей (как пример, пользователи Argent, которые уже используют первую версию zkSync). Мы ожидаем, что в будущем еще больше пользователей перейдут на смарт-кошельки.
 
-One of the most notable differences between various types of accounts to be built is different signature schemes. We expect accounts to support the [EIP-1271](https://eips.ethereum.org/EIPS/eip-1271) standard. Our team has created a utility library for verifying account signatures. Currently, it only supports ECDSA signatures, but we will add support for EIP-1271 very soon as well.
+Одним из наиболее заметных различий между различными типами создаваемых аккаунтов является различные схемы подписей. Мы ожидаем, что аккаунты будут поддерживать стандарт [EIP-1271](https://eips.ethereum.org/EIPS/eip-1271). Наша команда создала библиотеку утилит для проверки подписей аккаунтов. В настоящее время она поддерживает только подписи ECDSA, но очень скоро мы добавим поддержку EIP-1271.
 
-The `aa-signature-checker` library provides a way to verify signatures for different account implementations. Currently it only supports verifying ECDSA signatures. Very soon we will add support for EIP-1271 as well.
+Библиотека `aa-signature-checker` предоставляет возможность проверки подписей для различных вариантов реализации аккаунтов. В настоящее время он поддерживает только проверку подписей ECDSA. Очень скоро мы добавим поддержку EIP-1271.
 
-_We strongly encourage you to use this library whenever you need to check that a signature of an account is correct._
+_Мы настоятельно рекомендуем Вам использовать эту библиотеку всякий раз, когда Вам необходимо проверить правильность подписи учетной записи._
 
-### Adding the library to your project:
+### Добавление библиотеки в ваш проект:
 
 ```
 yarn add @matterlabs/signature-checker
 ```
 
-### Example of using the library
+### Пример использования библиотеки
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -283,11 +269,11 @@ contract TestSignatureChecker {
 }
 ```
 
-## Verifying AA signatures within our SDK
+## Верификация AA-подписей через наш SDK
 
-It is also **not recommended** to use `ethers.js` library to verify user signatures.
+**Не рекомендуется** использовать библиотеку `ethers.js` для проверки пользовательских подписей.
 
-Our SDK provides two methods with its `utils` to verify the signature of an account:
+Наш SDK предоставляет 2 метода с его утилитами `utils` для проверки подписи аккаунта:
 
 ```ts
 export async function isMessageSignatureCorrect(address: string, message: ethers.Bytes | string, signature: SignatureLike): Promise<boolean>;
@@ -301,6 +287,6 @@ export async function isTypedDataSignatureCorrect(
 ): Promise<boolean>;
 ```
 
-Currently these methods only support verifying ECDSA signatures, but very soon they will support EIP1271 signature verification as well.
+В настоящее время эти методы поддерживают только проверку подписей ECDSA, но очень скоро они также будут поддерживать и проверку подписей EIP1271.
 
-Both of these methods return `true` or `false` depending on whether the message signature is correct.
+Оба метода возвращают `true` или `false` в зависимости от правильности подписи сообщения.

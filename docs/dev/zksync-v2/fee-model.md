@@ -1,33 +1,33 @@
-# Fee model
+# Комиссионная модель
 
-zkSync's version of `gas` is called `ergs` and represents not only the costs of computations, but also the cost of publishing data onchain and affecting storage. Similar to `gas`, `ergs` is an absolute unit. VM operations (`add`, `mul`, etc.) will also have their costs measured in `ergs`, and they may not be equal to each other. The actual table of operation costs in `ergs` is yet to be defined.
+Версия `gas` на zkSync называется  `ergs` и отражает не только стоимость вычислений, но и стоимость публикации данных в сеть и влияние на хранилище. Подобно `газу`, `ergs` - абсолютная единица. Операции с виртуальной машиной (`add`, `mul`, и т.д.) тоже будут иметь свою стоимость, измеряемую в `ergs`, и они могут не быть равны друг другу. Актуальную таблицу стоимости операций в `ergs`  еще предстоит определить.&#x20;
 
-Since the costs for publishing the calldata on L1 are very volatile, the number of `ergs` needed for changing a storage slot is not constant. For each block, the operator defines the following dynamic parameters:
+Поскольку затраты на публикацию данных о вызовах (`calldata`) на L1 очень нестабильны, количество `ergs`, необходимых для изменения слота для хранения данных, не является постоянным. Для каждого блока оператор определяет следующие динамические параметры:
 
-- `ergs_price` — the table for the current base price in each token. The value of this parameter is used to determine the costs of VM execution in each token.
-- `ergs_per_pubdata` — the price in `ergs` for publishing one byte of data to Ethereum.
+- `ergs_price` — таблица текущей базовой цены в каждом токене. Значение этого параметра используется для определения затрат на выполнение виртуальной машины в каждом токене.
+- `ergs_per_pubdata` — цена в `ergs` за публикацию одного байта данных на Ethereum.
 
-**Please note that the public data is published only for state diffs.** If the same storage slot is updated 10 times in the same rollup block, only the final update will be published on Ethereum, thus only charging for public data once.
+**Обратите внимание, что публичные данные публикуются только при изменении состояния.** Если один и тот же слот хранилища обновляется 10 раз в одном и том же блоке rollup'a, то только последнее обновление будет опубликовано на Эфириуме, таким образом, плата за публикацию данных взимается только один раз.
 
-### Why do we need a different fee model?
+### Зачем нужна иная комиссионная модель?
 
-- **Why `ergs` and not gas?**
+- **Почему `ergs`, а не газ?**
 
-We want to show the clear distinction between our fee model and the Ethereum one. Also, unlike Ethereum, where most of the opcodes have very distinct gas prices, basic zkEVM opcodes will likely have similar `ergs` price. Generally, the execution itself (arithmetic operations, which do not involve storage updates) is very cheap. As in Ethereum, most of the cost is incurred for storage updates.
+Мы хотим показать четкую разницу между нашей и Эфириумовской комиссионными моделями. Также, в отличие от Эфириума, где большинство опкодов (код операции) имеют совершенно разные цены в газе, основные опкоды zkEVM, вероятно, будут иметь очень схожую стоимость в `ergs`.  Как правило, само исполнение (арифметическмие операции, который не требуют обновления хранилища) очень дешевы. Как и в Эфириуме, основной расход - изменение в хранилище данных.
 
-- **Why can't we have constant price for storage value?**
+- **Почему не может быть постоянной цены за хранение?**
 
-As part of the zkRollup security model, zkSync periodically publishes state diffs on Ethereum. The price of that is defined by Ethereum gas price and, as stated, is very volatile. This is why the operator can define the new price in `ergs` for publishing pubdata for each block. Users can provide a cap on the `ergs_per_pubdata` in the [EIP712](../../api/api.md#eip712) transactions.
+В качестве элемента модели безопасности zkRollup zkSync периодически публикует изменения состояния в Эфириум L1. Стоимость этого действия определяется ценой за газ в Эфириуме, и как было упомянуто выше, она очень нестабильна. Именно поэтому оператор может определять новую цену в `ergs` за публикацию данных для каждого блока. Пользователи могут задавать лимит в`ergs_per_pubdata` для транзакций типа [EIP712](https://v2-docs.zksync.io/api/api.html#eip712).
 
-### What does this mean to me?
+### Что это значит для меня?
 
-Despite the differences, the fee model is quite similar to the one of Ethereum; the most costly operation is storage change. One of the advantages of ZK Rollups over Optimistic Rollups is that, instead of publishing all the transaction data, ZK Rollups can publish only state diffs, thus making less storage changes.
+Несмотря на различия, комиссионная модель довольно схожа с Эфириумовской; наиболее затратная операция - изменение состояния в хранилище. Одно из преимуществ zkRollup'ов над Optimisic Rollup'ами в том, что вместо публикации всех транзакционных данных zkRollup'ы могут публиковать лишь изменения в состоянии хранилища, таким образом делая меньше изменений в хранилище.
 
-As already stated, if the same storage slot is updated several times in a single block, only the last update will be published on Ethereum, and the cost of storage change will only be charged once; but it goes beyond simple storage slots. For example, a DEX and a `PairFactory` factory for different `Pair` pools. The contract bytecode of `Pair` needs to be published only when the first instance is deployed. After the code of the `Pair` was published once, the subsequent deployments will only involve changing one storage slot -- to set the contract code hash on the newly deployed `Pair`'s address.
+Как уже было упомянуло, если один и тот же слот хранилища обновляется несколько раз в рамках одного блока, то лишь последнее обновление будет опубликовано в Эфириум, а цена за изменение в хранилище будет уплачена лишь единожды; но это правило выходит и за рамки простых слотов в хранилище. Например, DEX и `PairFactory` фактори для различных пулов пар `Pair`. Байт-код контракта `Pair` нужно опубликовать лишь при первом развертывании. После того как код `Pair` был опубликован впервые, следующие развертывания будут включать в себя изменение только в одном слоте хранилища - для установки хэша кода контракта на недавно развернутый адрес пары `Pair`.
 
-So the tips to make the most out of the zkSync fee system are the following:
+Вот некоторые подсказки, как получить максимальную отдачу от системы комиссий zkSync:
 
-- **Update storage slots as little as possible.** Cost for execution is a lot smaller than the cost of storage updates.
-- **Reuse as many storage slots as possible.** Only the state diff is published on Ethereum.
-- **Users should share as many storage slots as possible.** If 100 users update a storage slot of your contract in a single block, the diff will be published only once. In the future, we will introduce reimbursement for the users, so that the costs for updating shared storage slots are split between the users.
-- **Reuse contract code if possible.** On Ethereum, avoiding constructor parameters and putting them into constants reduces some of the gas cost upon contract deployment. On zkSync the opposite is true: deploying the same bytecode for contracts, while changing only constructor parameters can lead to substantial fee savings.
+- **Обновляйте слоты в хранилище как можно реже.** Стоимость исполнения гораздо ниже, чем стоимость обновлений хранилища.
+- **Используйте заново настолько много слотов хранилища, насколько возможно.** Только изменение состояния публикуется в Эфириум.
+- **Пользователям лучше разделять как можно больше слотов хранилища.** Если 100 пользователей внесут изменения в слот хранилища вашего контракта, изменение будет опубликовано лишь единожды. В будущем вы введем компенсации для пользователей, чтобы расходы на обновление общих слотов для хранения данных распределись между пользователями пропорционально.
+- **По возможности, повторно используйте код контракта.** На Ethereum избегание параметров конструктора и помещение их в константы немного уменьшает стоимость газа при развертывании контракта. На zkSync верно обратное: развертывание одного и того же байт-кода для контрактов при изменении только параметров конструктора может привести к существенной экономии на комиссиях.
