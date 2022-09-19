@@ -1,4 +1,4 @@
-# Getting started
+# Начало
 
 ::: warning Alpha testnet
 
