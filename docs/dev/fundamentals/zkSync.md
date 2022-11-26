@@ -48,7 +48,7 @@ Furthermore, on zkSync, each L2 block will progress through the following four s
 
 The typical time for a transaction to go from `Processed` to `Finalized` is a couple of hours at the current stage.
 
-Please note that for developer convenience, we usually treat the `Processed` and `Committed` states as a single stage called `Committed` since they have no difference from the UX/DexEx standpoints.
+Please note that for developer convenience, we usually treat the `Processed` and `Committed` states as a single stage called `Committed` since they have no difference from the UX/DevEx standpoints.
 
 ### The State of zkSync
 The current version of zkSync 2.0 solves the needs of most applications on Ethereum, and with more features planned for release soon, zkSync 2.0 will provide developers with a design space to experiment with applications not possible on Ethereum today. With this release, we are supporting the following features:
