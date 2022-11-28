@@ -1,30 +1,43 @@
-# Getting started
+# zkSync Documentation
 
-::: warning Alpha testnet
+This documentation is intended to assist you in developing on zkSync. 
+It introduces the concepts of zkSync, describes the zkSync network stack, and some advanced topics for complex applications and use cases.
 
-Welcome to zkSync 2.0 alpha testnet! Our team would be very happy to see what you can build on zkSync. We are glad for any feedback you could provide!
+Given this documentation is open-sourced, feel free to suggest new topics, add new content, and provide examples wherever you believe they will be useful. If you're unsure how to proceed, [follow these instructions](./troubleshooting/docs-contribution/docs.md).
 
-Note, that the system is still in active development, so:
+## Fundamental topics
 
-- **Breaking changes are possible in the future.**
-- **Some of the updates may require regenesis**, i.e. erasing all the balances, smart contracts, and restarting the blockchain. We will make sure to communicate all regenesis beforehand! Make sure to follow our [Discord](https://discord.gg/px2aR7w).
+If this is your first time using zkSync, we recommend that you kick off at the beginning and work your way through the documentation like you would with a book.
 
-:::
+- [Intro to rollups](./fundamentals/rollups.md) - A brief overview of rollups.
+- [zkSync overview](./fundamentals/zkSync.md) - A quick overview of zkSync technologies.
+- [zkSync testnet](./fundamentals/testnet.md) - A brief intro into zkSync testnest.
 
-**zkSync 2.0** is a [ZK rollup](./rollups.md): a trustless protocol that utilises zero-knowledge proofs to provide scalable low-cost transactions on Ethereum. All assets are stored in a single smart contract on the mainchain, while computation and storing data are performed off-chain. As all transactions are proven on Ethereum mainchain, users enjoy the same security level as in Ethereum.
+### Developer guides
 
-### zkSync 2.0 highlights
+- [Quickstart](./developer-guides/hello-world.md) - Learn how to build a full dApp using the zkSync development toolbox.
+- [Contract deployment](./developer-guides/contracts/contracts.md) - A guide on how to deploy smart contracts on zkSync.
+  - [Contract verification](../api/tools/block-explorer/contract-verification.md) - A guide on how to verify smart contracts with zkSync block explorer.
+- [System contracts](./developer-guides/contracts/system-contracts.md) - A brief overview of zkSync system contracts.
+- [Transactions](./developer-guides/transactions/transactions.md) - A guide on how zkSync handles transactions.
+  - [Blocks](./developer-guides/transactions/blocks.md) - Learn how blocks work on zkSync.
+  - [Fee mechanism](./developer-guides/transactions/fee-model.md) - A quick overview of the zkSync fee structure.
+- [Account abstraction](./developer-guides/aa.md) - Learn about account abstraction.
+- [Bridging of funds](./developer-guides/bridging/bridging-asset.md) - A brief intro on token bridging.
+  - [L1 / L2 Interoperability](./developer-guides/bridging/l1-l2-interop.md) - A quick brief on data communication between L1 and L2.
+    - [L1 / L2 communication](./developer-guides/bridging/l1-l2.md) - Learn how to send data from Ethereum to zkSync.
+    - [L2 / L1 communication](./developer-guides/bridging/l2-l1.md) - Learn how to send data from zkSync to Ethereum.
+- [Important links](./troubleshooting/important-links.md) - Get a quick reference to important links.
+- [Status](./troubleshooting/status.md) - Get updates on things we are currently working on.
+- [Known Issues](./troubleshooting/known-issues.md) - Get answers to common issues you may find.
 
-- Mainnet-like security with zero reliance on 3rd parties.
-- Permissionless EVM-compatible smart contracts.
-- Standard Web3 API.
-- Preserving key EVM features, such as smart contract composability.
-- Introducing new features, such as account abstraction and meta-transactions.
+### Developer Tools
 
-### How to get started?
+- [zkSync 2.0 Portal](https://portal.zksync.io) - Explore Wallet, Bridge and Faucet features.
+- [Block explorer](../api/tools/block-explorer/) - Search for real-time and historical information about blocks, transactions, addresses, and more on zkSync block explorer.
 
-- Begin by [trying out](./testnet/user.md) the zkSync 2.0 UX yourself!
-- See the info on RPC nodes, wallet, block explorer on the [important links](./testnet/important-links.md) page.
-- If you are new to rollups, then the [ZK rollup basics](./rollups.md) guide will help you getting familiar with the ZK rollup architecture in general.
-- If you already know how ZK rollups work, then [Understanding zkSync 2.0](./zksync-v2) will serve as an introduction into the concepts behind zkSync 2.0.
-- Want to dive directly into the code? Head straight to the [Developer guide](./guide).
+### Examples and tutorials
+
+- [Cross-chain governance](./tutorials/cross-chain-tutorial.md) - Learn how to use L1 to L2 contract interaction.
+- [Account abstraction](./tutorials/custom-aa-tutorial.md) - Learn how to deploy your custom accounts and interact zkSync system contracts.
+- [Building custom paymasters](./tutorials/custom-paymaster-tutorial.md) - Learn how to build a custom paymaster to allow users to pay fees in your token.

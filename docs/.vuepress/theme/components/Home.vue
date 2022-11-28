@@ -104,6 +104,52 @@ export default {
 </script>
 
 <style lang="stylus">
+.go-to-top {
+  cursor: pointer;
+  position: fixed;
+  bottom: 2rem;
+  right: 1.5rem !important;
+  width: 1.5rem !important;
+  color: #fff !important;
+  background-color: #797afb !important;
+  border-radius: 10px !important;
+  padding: 10px;
+  z-index: 1;
+}
+
+.search-box {
+  order: 1;
+  margin-right: 0;
+  margin-left: 1rem;
+  position: fixed !important;
+  right: 0;
+
+  .suggestions {
+    left: auto !important;
+    right: 0 !important;
+  }
+}
+
+.navbar {
+  display: flex;
+  justify-content: flex-start;
+
+  .repo-link {
+    display: none;
+  }
+
+  .links {
+    left: 20rem;
+    right: auto !important;
+    padding-left: 0 !important;
+  }
+
+  .nav-item > a:not(.external).router-link-active, .nav-item > a:not(.external):hover {
+    padding-bottom: 14px;
+    border-bottom-width: 3px;
+  }
+}
+
 .home {
   padding: $navbarHeight 2rem 0;
   max-width: $homePageWidth;
@@ -268,7 +314,22 @@ export default {
   }
 }
 
+@media (max-width: $MQNarrow) {
+  .navbar {
+    .links {
+      left: 16.4rem;
+
+      .search-box {
+        position: fixed;
+        right: 0;
+        z-index: 1;
+      }
+    }
+  }
+}
+
 @media (max-width: $MQMobile) {
+
   .home {
     .features {
       flex-direction: column;
@@ -277,6 +338,14 @@ export default {
     .feature {
       max-width: 100%;
       padding: 0 2.5rem;
+    }
+  }
+
+  .navbar {
+    .links {
+      .search-box {
+        margin-right: 1rem !important;
+      }
     }
   }
 }

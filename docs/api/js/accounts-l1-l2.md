@@ -2,7 +2,7 @@
 
 This section explores the methods which allow the [account](./accounts.md) classes to send transactions from L1 to L2.
 
-If you want to get some background on how L1->L2 interaction works on zkSync, go through the [introduction](../../dev/zksync-v2/l1-l2-interop.md) and the [guide](../../dev/guide/l1-l2.md).
+If you want to get some background on how L1->L2 interaction works on zkSync, go through the [introduction](../../dev/developer-guides/bridging/l1-l2-interop.md) and the [guide](../dev/../../dev/developer-guides/bridging/l1-l2.md).
 
 ## Supported classes
 
@@ -154,6 +154,21 @@ async getBaseCost(params: {
 | params.calldataLength       | The length of the calldata in bytes.                                                                   |
 | params.gasPrice (optional)  | The gas price of the L1 transaction that will send the request for an execute call.                    |
 | returns                     | The base cost in ETH for requesting the contract call.                                                 |
+
+## Claim Failed Deposit
+
+The `claimFailedDeposit` method withdraws funds from the initiated deposit, which failed when finalizing on L2.  
+If the deposit L2 transaction has failed, it sends an L1 transaction calling `claimFailedDeposit` method of the L1 bridge, which results in returning L1 tokens back to the depositor, otherwise throws the error.
+
+```ts
+async claimFailedDeposit(depositHash: BytesLike): Promise<ethers.ContractTransaction>
+```
+
+### Input Parameters
+
+| Parameter |       Type          | Description                                                                               |
+| --------- |       ------------  | ----------------------------------------------------------------------------------------- |
+| depositHash       | `bytes32`   |The  L2 transaction hash of the failed deposit.                                            |
 
 ### Requesting transaction execution
 
