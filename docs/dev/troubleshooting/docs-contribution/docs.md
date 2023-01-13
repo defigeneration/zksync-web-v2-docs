@@ -8,10 +8,12 @@ As collaboration on contribution to zkSync documentation is such an integral par
 
 - Instant messaging tools, such as [zkSync Discord](https://join.zksync.dev/), [Telegram: user support group](https://t.me/zksync_support).
 - Issues - Communicate about actionable items (things that can be acted upon and completed, such as problems with a specific Documentation page, a need for reorganization, etc.):
-    - If you find a problem with a specific page in the zkSync documentation, you can always [edit the page](./edit-doc.md) to fix it.
+    - If you find a problem with a specific page in the zkSync documentation, you can always [edit the page](#edit-or-review-a-documentation-page) to fix it.
     - If you want to discuss a larger problem or propose a major change to the zkSync documentation, you can raise an [issue on Github](https://github.com/matter-labs/zksync-web-v2-docs/issues).
-- Share views and know the latest discussions on our [Community Forum](https://community.zksync.io/).
-- Follow zkSync on Twitter to get the latest happenings on zkSync.
+- Follow [zkSync on Twitter](https://twitter.com/zksync) to get the latest happenings on zkSync.
+
+<TocHeader />
+<TOC class="table-of-contents" :include-level="[2,3]" />
 
 ## Ways to contribute
 
@@ -31,7 +33,7 @@ Find a documentation page that you think needs updating, proofreading, or editin
 
 ### Categories of contribution
 
-Review the page, to see if it needs editing. Things to look for:
+Review the page to see if it needs editing. Things to look for:
 1. Proofreading (spelling, grammar, punctuation).
 2. Does the particular page of interest follow the content style guide and the documentation structure guide, if it doesn't you can edit.
 3. 404 links - Make edits and create a PR to fix any broken links.

@@ -1,5 +1,8 @@
 # Account abstraction support
 
+<TocHeader />
+<TOC class="table-of-contents" :include-level="[2,3]" />
+
 ## Introduction
 
 On Ethereum there are two types of accounts: [externally owned accounts (EOAs)](https://ethereum.org/en/developers/docs/accounts/#externally-owned-accounts-and-key-pairs) and [contracts accounts](https://ethereum.org/en/developers/docs/accounts/#contract-accounts).
@@ -18,7 +21,7 @@ zkSync 2.0 is one of the first EVM-compatible chains to adopt AA, so this testne
 
 :::
 
-### Prerequisites
+## Prerequisites
 
 To better understand this page, we recommend you take some time to first read a guide on [accounts](https://ethereum.org/en/developers/docs/accounts/).
 
@@ -57,8 +60,7 @@ it is recommended to only use the `incrementNonceIfEquals` method, which practic
 
 ### Standardizing transaction hashes
 
-In the future, it is planned to support efficient proofs of transaction inclusion on zkSync. This would require us to calculate the transaction's hash in the [bootloader](..
-/contracts/system-contracts.md#bootloader). Since these calculations won't be free to the user, it is only fair to include the transaction's hash in the interface of the AA
+In the future, it is planned to support efficient proofs of transaction inclusion on zkSync. This would require us to calculate the transaction's hash in the [bootloader](../developer-guides/contracts/system-contracts.md#bootloader). Since these calculations won't be free to the user, it is only fair to include the transaction's hash in the interface of the AA
 methods (in case the accounts may need this value for some reason). That's why all the methods of the `IAccount` and `IPaymaster` interfaces, which are described below,
 contain the hash of the transaction as well as the recommended signed digest (the digest that is signed by EOAs for this transaction).
 
@@ -84,7 +86,7 @@ Each paymaster should implement the [IPaymaster](https://github.com/matter-labs/
 
 ### Reserved fields of the `Transaction` struct with special meaning
 
-Note that each of the methods above accept the [Transaction](https://github.com/matter-labs/v2-testnet-contracts/blob/0e1c95969a2f92974370326e4430f03e417b25e7/l2/system-contracts/TransactionHelper.sol#L15) struct.
+Note that each of the methods above accept the [Transaction](https://github.com/matter-labs/v2-testnet-contracts/blob/main/l2/system-contracts/TransactionHelper.sol#L15) struct.
 While some of its fields are self-explanatory, there are also 6 `reserved` fields, the meaning of each is defined by the transaction's type. We decided to not give these fields names, since they might be unneeded in some future transaction types. For now, the convention is:
 
 - `reserved[0]` is the nonce.
@@ -130,9 +132,9 @@ By default, calling `estimateGas` adds a constant to cover charging the fee and 
 
 ## Using the `SystemContractsCaller` library
 
-For the sake of security, both `NonceHolder` and the `ContractDeployer` system contracts can only be called with a special `isSystem` flag. You can read more about it [here](./contracts/system-contracts.md#protected-access-to-some-of-the-system-contracts). To make a call with this flag, the `systemCall` method of the [SystemContractsCaller](https://github.com/matter-labs/v2-testnet-contracts/blob/sb-system-contracts-for-new-update/l2/system-contracts/SystemContractsCaller.sol) library should be used.
+For the sake of security, both `NonceHolder` and the `ContractDeployer` system contracts can only be called with a special `isSystem` flag. You can read more about it [here](./contracts/system-contracts.md#protected-access-to-some-of-the-system-contracts). To make a call with this flag, the `systemCall`/`systemCallWithPropagatedRevert`/`systemCallWithReturndata` methods of the [SystemContractsCaller](https://github.com/matter-labs/v2-testnet-contracts/blob/main/l2/system-contracts/SystemContractsCaller.sol) library should be used.
 
-Using this library is practically a must when developing custom accounts since this is the only way to call non-view methods of the `NonceHolder` system contract. Also, you will have to use this library if you want to allow users to deploy contracts of their own. You can use the [implementation](https://github.com/matter-labs/v2-testnet-contracts/blob/sb-system-contracts-for-new-update/l2/system-contracts/DefaultAccount.sol) of the EOA account as a reference.
+Using this library is practically a must when developing custom accounts since this is the only way to call non-view methods of the `NonceHolder` system contract. Also, you will have to use this library if you want to allow users to deploy contracts of their own. You can use the [implementation](https://github.com/matter-labs/v2-testnet-contracts/blob/main/l2/system-contracts/DefaultAccount.sol) of the EOA account as a reference.
 
 ## Extending EIP4337
 
@@ -164,7 +166,7 @@ In the future, we might even allow time-bound transactions, e.g. allow checking 
 
 As already mentioned above, each account should implement the [IAccount](#iaccount-interface) interface.
 
-An example of the implementation of the AA interface is the [implementation](https://github.com/matter-labs/v2-testnet-contracts/blob/6a93ff85d33dfff0008624eb9777d5a07a26c55d/l2/system-contracts/DefaultAA.sol#L16) of the EOA account.
+An example of the implementation of the AA interface is the [implementation](https://github.com/matter-labs/v2-testnet-contracts/blob/main/l2/system-contracts/DefaultAccount.sol#L17) of the EOA account.
 Note that this account, just like standard EOA accounts on Ethereum, successfully returns empty value whenever it is called by an external address, while this may not be the behaviour that you would like for your account.
 
 ### EIP1271
@@ -210,7 +212,7 @@ Currently, your transactions may pass through the API despite violating the requ
 ### Nonce holder contract
 
 For optimization purposes, both [tx nonce and the deployment nonce](./contracts/contracts.md#differences-in-create-behaviour) are put in one storage slot inside the [NonceHolder](./contracts/system-contracts.md#inonceholder) system contracts.
-In order to increment the nonce of your account, it is highly recommended to call the [incrementNonceIfEquals](https://github.com/matter-labs/v2-testnet-contracts/blob/0e1c95969a2f92974370326e4430f03e417b25e7/l2/system-contracts/interfaces/INonceHolder.sol#L10) function and pass the value of the nonce provided in the transaction.
+In order to increment the nonce of your account, it is highly recommended to call the [incrementNonceIfEquals](https://github.com/matter-labs/v2-testnet-contracts/blob/main/l2/system-contracts/interfaces/INonceHolder.sol#L12) function and pass the value of the nonce provided in the transaction.
 
 This is one of the whitelisted calls, where the account logic is allowed to call outside smart contracts.
 

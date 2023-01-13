@@ -3,6 +3,9 @@
 Now, let's learn how to deploy your custom accounts and interact directly with the [ContractDeployer](../developer-guides/contracts/system-contracts.md#contractdeployer) system contract.
 In this tutorial, we build a factory that deploys 2-of-2 multisig accounts.
 
+<TocHeader />
+<TOC class="table-of-contents" :include-level="[2,3]" />
+
 ## Prerequisite
 
 It is highly recommended to read about the [design](../developer-guides/aa.md) of the account abstraction protocol before diving into this tutorial.
@@ -30,6 +33,12 @@ yarn add @matterlabs/zksync-contracts @openzeppelin/contracts @openzeppelin/cont
 
 Also, create the `hardhat.config.ts` config file, `contracts` and `deploy` folders, like in the [quickstart tutorial](../developer-guides/hello-world.md).
 
+::: tip
+
+You can use the zkSync CLI to scaffold a project automatically. Find [more info about the zkSync CLI here](../../api/tools/zksync-cli/)
+
+:::
+
 ## Account abstraction
 
 Each account needs to implement the [IAccount](../developer-guides/aa.md#iaccount-interface) interface. Since we are building an account with signers, we should also have [EIP1271](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/83277ff916ac4f58fec072b8f28a252c1245c2f1/contracts/interfaces/IERC1271.sol#L12) implemented.
@@ -49,7 +58,7 @@ contract TwoUserMultisig is IAccount, IERC1271 {
 
     modifier onlyBootloader() {
         require(msg.sender == BOOTLOADER_FORMAL_ADDRESS, "Only bootloader can call this method");
-        // Continure execution if called from the bootloader.
+        // Continue execution if called from the bootloader.
         _;
     }
 
@@ -88,7 +97,7 @@ contract TwoUserMultisig is IAccount, IERC1271 {
 
     }
 
-	  receive() external payable {
+	receive() external payable {
         // If the bootloader called the `receive` function, it likely means
         // that something went wrong and the transaction should be aborted. The bootloader should
         // only interact through the `validateTransaction`/`executeTransaction` methods.
@@ -162,7 +171,7 @@ Using the `TransactionHelper` library:
 using TransactionHelper for Transaction;
 ```
 
-Also, note that since the non-view methods of the `NONCE_HOLDER_SYSTEM_CONTRACT` are required to be called with the `isSystem` flag on, the [systemCall](https://github.com/matter-labs/v2-testnet-contracts/blob/a3cd3c557208f2cd18e12c41840c5d3728d7f71b/l2/system-contracts/SystemContractsCaller.sol#L55) method of the `SystemContractsCaller` library should be used, so this library needs to be imported as well:
+Also, note that since the non-view methods of the `NONCE_HOLDER_SYSTEM_CONTRACT` are required to be called with the `isSystem` flag on, the [systemCall](https://github.com/matter-labs/v2-testnet-contracts/blob/main/l2/system-contracts/SystemContractsCaller.sol#L77) method of the `SystemContractsCaller` library should be used, so this library needs to be imported as well:
 
 ```solidity
 import '@matterlabs/zksync-contracts/l2/system-contracts/SystemContractsCaller.sol';
@@ -174,7 +183,7 @@ Now we can implement the `_validateTransaction` method:
 function _validateTransaction(bytes32 _suggestedSignedHash, Transaction calldata _transaction) internal {
     // Incrementing the nonce of the account.
     // Note, that reserved[0] by convention is currently equal to the nonce passed in the transaction
-    SystemContractsCaller.systemCall(
+    SystemContractsCaller.systemCallWithPropagatedRevert(
         uint32(gasleft()),
         address(NONCE_HOLDER_SYSTEM_CONTRACT),
         0,
@@ -248,7 +257,7 @@ function _executeTransaction(Transaction calldata _transaction) internal {
 
     if(to == address(DEPLOYER_SYSTEM_CONTRACT)) {
         // We allow calling ContractDeployer with any calldata
-        SystemContractsCaller.systemCall(
+        SystemContractsCaller.systemCallWithPropagatedRevert(
             uint32(gasleft()),
             to,
             uint128(_transaction.reserved[1]), // By convention, reserved[1] is `value`
@@ -300,7 +309,7 @@ contract TwoUserMultisig is IAccount, IERC1271 {
             msg.sender == BOOTLOADER_FORMAL_ADDRESS,
             "Only bootloader can call this method"
         );
-        // Continure execution if called from the bootloader.
+        // Continue execution if called from the bootloader.
         _;
     }
 
@@ -323,7 +332,7 @@ contract TwoUserMultisig is IAccount, IERC1271 {
     ) internal {
         // Incrementing the nonce of the account.
         // Note, that reserved[0] by convention is currently equal to the nonce passed in the transaction
-        SystemContractsCaller.systemCall(
+        SystemContractsCaller.systemCallWithPropagatedRevert(
             uint32(gasleft()),
             address(NONCE_HOLDER_SYSTEM_CONTRACT),
             0,
@@ -364,7 +373,7 @@ contract TwoUserMultisig is IAccount, IERC1271 {
 
         if (to == address(DEPLOYER_SYSTEM_CONTRACT)) {
             // We allow calling ContractDeployer with any calldata
-            SystemContractsCaller.systemCall(
+            SystemContractsCaller.systemCallWithPropagatedRevert(
                 uint32(gasleft()),
                 to,
                 uint128(_transaction.reserved[1]), // By convention, reserved[1] is `value`
@@ -453,8 +462,8 @@ The code will look the following way:
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import '@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol';
-import '@matterlabs/zksync-contracts/l2/system-contracts/SystemContractsCaller.sol';
+import "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
+import "@matterlabs/zksync-contracts/l2/system-contracts/SystemContractsCaller.sol";
 
 contract AAFactory {
     bytes32 public aaBytecodeHash;
@@ -468,19 +477,22 @@ contract AAFactory {
         address owner1,
         address owner2
     ) external returns (address accountAddress) {
-        bytes memory returnData = SystemContractsCaller.systemCall(
-            uint32(gasleft()),
-            address(DEPLOYER_SYSTEM_CONTRACT),
-            0,
-            abi.encodeCall(
-                DEPLOYER_SYSTEM_CONTRACT.create2Account,
-                (salt, aaBytecodeHash, abi.encode(owner1, owner2))
-            )
-        );
+        (bool success, bytes memory returnData) = SystemContractsCaller
+            .systemCallWithReturndata(
+                uint32(gasleft()),
+                address(DEPLOYER_SYSTEM_CONTRACT),
+                uint128(0),
+                abi.encodeCall(
+                    DEPLOYER_SYSTEM_CONTRACT.create2Account,
+                    (salt, aaBytecodeHash, abi.encode(owner1, owner2))
+                )
+            );
+        require(success, "Deployment failed");
 
         (accountAddress, ) = abi.decode(returnData, (address, bytes));
     }
 }
+
 ```
 
 Note, that on zkSync, the deployment is not done via bytecode, but via bytecode hash. The bytecode itself is passed to the operator via `factoryDeps` field. Note, that the `_aaBytecodeHash` must be formed specially:
@@ -559,12 +571,12 @@ import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 // Put the address of your AA factory
-const AA_FACTORY_ADDRESS = "<YOUR_FACTORY_ADDRESS>";
+const AA_FACTORY_ADDRESS = "<FACTORY-ADDRESS>";
 
 // An example of a deploy script deploys and calls a simple contract.
 export default async function (hre: HardhatRuntimeEnvironment) {
-  const provider = new Provider(hre.config.zkSyncDeploy.zkSyncNetwork);
-  const wallet = new Wallet("<PRIVATE-KEY>").connect(provider);
+  const provider = new Provider("https://zksync2-testnet.zksync.dev");
+  const wallet = new Wallet("<WALLET-PRIVATE-KEY>").connect(provider);
   const factoryArtifact = await hre.artifacts.readArtifact("AAFactory");
 
   const aaFactory = new ethers.Contract(AA_FACTORY_ADDRESS, factoryArtifact.abi, wallet);
@@ -678,11 +690,11 @@ import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 // Put the address of your AA factory
-const AA_FACTORY_ADDRESS = "<YOUR_FACTORY_ADDRESS>";
+const AA_FACTORY_ADDRESS = "<FACTORY-ADDRESS>";
 
 export default async function (hre: HardhatRuntimeEnvironment) {
-  const provider = new Provider(hre.config.zkSyncDeploy.zkSyncNetwork);
-  const wallet = new Wallet("<YOUR_PRIVATE_KEY>").connect(provider);
+  const provider = new Provider("https://zksync2-testnet.zksync.dev");
+  const wallet = new Wallet("<WALLET_PRIVATE_KEY>").connect(provider);
   const factoryArtifact = await hre.artifacts.readArtifact("AAFactory");
 
   const aaFactory = new ethers.Contract(AA_FACTORY_ADDRESS, factoryArtifact.abi, wallet);

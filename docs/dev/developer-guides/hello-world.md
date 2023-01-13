@@ -15,6 +15,9 @@ The testnet paymaster is just for testing. If you decide to build a project on m
 
 :::
 
+<TocHeader />
+<TOC class="table-of-contents" :include-level="[2,3]" />
+
 ## Prerequisites
 
 - `yarn` package manager. [Here is the installation guide](https://yarnpkg.com/getting-started/install)(`npm` examples will be added soon.)
@@ -36,26 +39,21 @@ Please note that Typescript is required by zkSync plugins.
 2. Create the `hardhat.config.ts` file and paste the following code there:
 
 ```typescript
-require("@matterlabs/hardhat-zksync-deploy");
-require("@matterlabs/hardhat-zksync-solc");
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-solc";
 
 module.exports = {
   zksolc: {
-    version: "1.2.0",
+    version: "1.2.2",
     compilerSource: "binary",
-    settings: {
-      experimental: {
-        dockerImage: "matterlabs/zksolc",
-        tag: "v1.2.0",
-      },
-    },
+    settings: {},
   },
-  zkSyncDeploy: {
-    zkSyncNetwork: "https://zksync2-testnet.zksync.dev",
-    ethNetwork: "goerli", // Can also be the RPC URL of the network (e.g. `https://goerli.infura.io/v3/<API_KEY>`)
-  },
+  defaultNetwork: "zkSyncTestnet",
+
   networks: {
-    hardhat: {
+    zkSyncTestnet: {
+      url: "https://zksync2-testnet.zksync.dev",
+      ethNetwork: "goerli", // Can also be the RPC URL of the network (e.g. `https://goerli.infura.io/v3/<API_KEY>`)
       zksync: true,
     },
   },
@@ -71,9 +69,9 @@ If the contract was already compiled, you should delete the `artifacts-zk` and `
 
 :::
 
-1. Create the `contracts` and `deploy` folders. The former is the place where we will store all the smart contracts' `*.sol` files, and the latter is the place where we will put all the scripts related to deploying the contracts.
+3. Create the `contracts` and `deploy` folders. The former is the place where we will store all the smart contracts' `*.sol` files, and the latter is the place where we will put all the scripts related to deploying the contracts.
 
-2. Create the `contracts/Greeter.sol` contract and paste the following code in it:
+4. Create the `contracts/Greeter.sol` contract and paste the following code in it:
 
 ```solidity
 //SPDX-License-Identifier: Unlicense
@@ -105,7 +103,7 @@ yarn hardhat compile
 6. Create the following deployment script in `deploy/deploy.ts`:
 
 ```typescript
-import { Wallet, Provider, utils } from "zksync-web3";
+import { Wallet, utils } from "zksync-web3";
 import * as ethers from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
@@ -115,7 +113,6 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   console.log(`Running deploy script for the Greeter contract`);
 
   // Initialize the wallet.
-  const provider = new Provider(hre.userConfig.zkSyncDeploy?.zkSyncNetwork);
   const wallet = new Wallet("<WALLET-PRIVATE-KEY>");
 
   // Create deployer object and load the artifact of the contract you want to deploy.
@@ -151,7 +148,7 @@ export default async function (hre: HardhatRuntimeEnvironment) {
 }
 ```
 
-7. Replacing the `WALLET-PRIVATE-KEY` with the `0x`-prefixed private key of the Ethereum wallet you're using for development, and run the script using the following command to run the deployment script:
+7. Replacing the `WALLET-PRIVATE-KEY` with the private key of the Ethereum wallet you're using for development, and run the script using the following command to run the deployment script:
 
 ```
 yarn hardhat deploy-zksync
@@ -208,7 +205,7 @@ async getGreeting() {
 },
 
 async getFee() {
-  // TOOD: return formatted fee
+  // TODO: return formatted fee
   return "";
 },
 
@@ -367,7 +364,7 @@ initializeProviderAndSigner() {
 
 ### Retrieving the greeting
 
-1. Fill in the method to retrieve the greeting from the smart contract:
+Fill in the method to retrieve the greeting from the smart contract:
 
 ```javascript
 async getGreeting() {
@@ -503,6 +500,16 @@ async changeGreeting() {
 
 You now have a fully functional Greeter-dApp! However, it does not leverage any zkSync-specific features.
 
+::: warning
+
+What happens when you get a **wallet_requestPermissions** error?
+
+To fix this error, refresh your browser, or open the MetaMask extension on your browser and click _Next_ or _Cancel_ to resolve it.
+
+Read more about **wallet_requestPermissions**, on the [metamask documentation](https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions).
+
+:::
+
 ### Paying fees using testnet paymaster
 
 Even though ether is the only token you can pay fees with, the account abstraction feature allows you to integrate [paymasters](./aa.md#paymasters) that can either pay the fees entirely for you or swap your tokens on the fly. In this tutorial, we will use the [testnet paymaster](./aa.md#testnet-paymaster) that is provided on all zkSync testnets. It allows users to pay fees in an ERC20 token with the exchange rate of ETH of 1:1, i.e. one unit of the token for one wei of ETH.
@@ -537,7 +544,7 @@ Note, that it is recommended to retrieve the testnet paymaster's address each ti
 import { Contract, Web3Provider, Provider, utils } from "zksync-web3";
 ```
 
-2. We need to calculate how many tokens are required to process the transaction. Since the testnet paymaster exchanges any ERC20 token to ETH at a 1:1 rate, the amount is the same as the ETH amount:
+3. We need to calculate how many tokens are required to process the transaction. Since the testnet paymaster exchanges any ERC20 token to ETH at a 1:1 rate, the amount is the same as the ETH amount:
 
 ```javascript
 async getOverrides() {
@@ -555,7 +562,7 @@ async getOverrides() {
 }
 ```
 
-3. Now, what is left is to encode the paymasterInput following the [protocol requirements](./aa.md#testnet-paymaster) and return the needed overrides:
+4. Now, what is left is to encode the paymasterInput following the [protocol requirements](./aa.md#testnet-paymaster) and return the needed overrides:
 
 ```javascript
 async getOverrides() {
@@ -589,7 +596,7 @@ async getOverrides() {
 }
 ```
 
-4. To use a list of ERC20 tokens, change the following line:
+5. To use a list of ERC20 tokens, change the following line:
 
 ```javascript
 const allowedTokens = require("./eth.json");
@@ -609,11 +616,11 @@ Now you should be able to update the greeting message.
 
 ![img](../../assets/images/start-3.png)
 
-1. Since the `paymasterParams` were supplied, the transaction will be an `EIP712` ([more on EIP712 here](https://eips.ethereum.org/EIPS/eip-712)):
+2. Since the `paymasterParams` were supplied, the transaction will be an `EIP712` ([more on EIP712 here](https://eips.ethereum.org/EIPS/eip-712)):
 
 ![img](../../assets/images/start-4.png)
 
-1. Click "Sign".
+3. Click "Sign".
 
 After the transaction is processed, the page updates the balances and the new greeting can be viewed:
 

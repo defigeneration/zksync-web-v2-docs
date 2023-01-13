@@ -10,23 +10,43 @@ module.exports = {
     md.use(require("markdown-it-footnote"));
   },
   plugins: [
+    "vuepress-plugin-table-of-contents",
+    "@vuepress/back-to-top",
     [
-      "@vuepress/back-to-top",
-      "fulltext-search",
-      "vuepress-plugin-canonical",
+      "vuepress-plugin-dehydrate",
       {
-        baseURL: "https://zksync.io", // base url for your canonical link, optional, default: ''
-        stripExtension: false, // strip '.html' , optional, default: false
+        noSSR: "404.html",
+        noScript: [],
+      },
+    ],
+    [
+      "flexsearch",
+      {
+        /*
+          Plugin custom options
+        */
+        maxSuggestions: 10, // how many search suggestions to show on the menu, the default is 10.
+        searchPaths: null, // an array of paths to search in, keep it null to search all docs.
+        searchHotkeys: ["s"], // Hot keys to activate the search input, the default is "s" but you can add more.
+        searchResultLength: 60, // the length of the suggestion result text by characters, the default is 60 characters.
+        splitHighlightedWords: " ", // regex or string to split highlighted words by, keep it null to use flexsearch.split
+        noExtraSpaceAfterHtmlTag: false, // don't add extra spaces in highlighted results
       },
     ],
   ],
   themeConfig: {
+    // algolia: {
+    //   apiKey: 'LCWOUB1OFO',
+    //   indexName: '6c6d0d793fc59f3295143fd50027a372',
+    //   appId: 'v2-zksync',
+    // },
     repo: "matter-labs/zksync-web-v2-docs",
     editLinks: true,
     docsDir: "docs",
     docsBranch: "main",
     logo: "/LogotypeLight.svg",
     lastUpdated: "Last Updated",
+
     nav: [
       // {
       //   text: "User Docs",
@@ -72,11 +92,7 @@ module.exports = {
           title: "Getting started",
           path: "/dev/fundamentals",
           collapsable: false,
-          children: [
-            "/dev/fundamentals/rollups.md", 
-            "/dev/fundamentals/zkSync.md", 
-            "/dev/fundamentals/testnet.md", 
-            "/dev/fundamentals/faq.md"],
+          children: ["/dev/fundamentals/rollups.md", "/dev/fundamentals/zkSync.md", "/dev/fundamentals/testnet.md", "/dev/fundamentals/faq.md"],
         },
         {
           title: "Understanding zkSync",
@@ -102,6 +118,7 @@ module.exports = {
           children: [
             "/dev/developer-guides/hello-world.md",
             "/dev/developer-guides/contracts/contracts.md",
+            "/dev/developer-guides/contracts/contract-deployment.md",
             "/dev/developer-guides/contracts/contract-verification.md",
             "/dev/developer-guides/building-on-zksync/events.md",
             "/dev/developer-guides/building-on-zksync/rpc.md",
@@ -112,10 +129,7 @@ module.exports = {
           title: "Tutorials",
           path: "/dev/tutorials",
           collapsable: false,
-          children: [
-          "/dev/tutorials/cross-chain-tutorial.md", 
-          "/dev/tutorials/custom-aa-tutorial.md", 
-          "/dev/tutorials/custom-paymaster-tutorial.md"],
+          children: ["/dev/tutorials/cross-chain-tutorial.md", "/dev/tutorials/custom-aa-tutorial.md", "/dev/tutorials/custom-paymaster-tutorial.md"],
         },
         {
           title: "Troubleshooting",
@@ -143,13 +157,13 @@ module.exports = {
           collapsable: false, // optional, defaults to true
           sidebarDepth: 1, // optional, defaults to 1
         },
-        {
-          title: "L1 contract interface",
-          path: "/api/contracts.md",
-          collapsable: false, // optional, defaults to true
-          sidebarDepth: 1, // optional, defaults to 1
-          //children: ["/api/contracts/l1-l2.md"],
-        },
+        // {
+        //   title: "L1 contract interface",
+        //   path: "/api/contracts.md",
+        //   collapsable: false, // optional, defaults to true
+        //   sidebarDepth: 1, // optional, defaults to 1
+        //   //children: ["/api/contracts/l1-l2.md"],
+        // },
         {
           title: "JavaScript SDK", // required
           path: "/api/js", // optional, which should be a absolute path.
@@ -169,7 +183,7 @@ module.exports = {
         },
         {
           title: "Python SDK", // required
-          path: "/api/python/getting-started", // optional, which should be a absolute path.
+          path: "/api/python/", // optional, which should be a absolute path.
           collapsable: false, // optional, defaults to true
           sidebarDepth: 1, // optional, defaults to 1
           children: ["/api/python/getting-started"],
@@ -193,21 +207,20 @@ module.exports = {
           path: "/api/hardhat", // optional, which should be a absolute path.
           collapsable: false, // optional, defaults to true
           sidebarDepth: 1,
-          children: [
-            "/api/hardhat/getting-started", 
-            "/api/hardhat/plugins", 
-            "/api/hardhat/testing", 
-            "/api/hardhat/compiling-libraries"],
+          children: ["/api/hardhat/getting-started", "/api/hardhat/plugins", "/api/hardhat/testing", "/api/hardhat/compiling-libraries"],
         },
         {
           title: "Block Explorer", // required
           path: "/api/tools/block-explorer", // optional, which should be a absolute path.
           collapsable: false, // optional, defaults to true
           sidebarDepth: 1, // optional, defaults to 1
-          children: [
-            "/api/tools/block-explorer/intro", 
-            "/api/tools/block-explorer/block-view", 
-            "/api/tools/block-explorer/contract-verification"],
+          children: ["/api/tools/block-explorer/intro", "/api/tools/block-explorer/block-view", "/api/tools/block-explorer/contract-verification"],
+        },
+        {
+          title: "zkSync CLI", // required
+          path: "/api/tools/zksync-cli/", // optional, which should be a absolute path.
+          collapsable: false, // optional, defaults to true
+          sidebarDepth: 0, // optional, defaults to 1
         },
       ],
     },

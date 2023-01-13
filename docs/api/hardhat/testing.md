@@ -4,6 +4,9 @@ Sometimes there is a need to test contracts in a local environment for network l
 
 zkSync team provides a dockerized local setup for this purpose.
 
+<TocHeader />
+<TOC class="table-of-contents" :include-level="[2,3]" />
+
 ## Prerequisites
 
 It is required that you have `Docker` and `docker-compose` installed on your computer. Find the [installation guide here](https://docs.docker.com/get-docker/)
@@ -111,41 +114,41 @@ This will enable running tests in a Hardhat environment with the `NODE_ENV` env 
 4. Modify `hardhat.config.ts` to use the local node for testing:
 
 ```typescript
-require("@matterlabs/hardhat-zksync-deploy");
-require("@matterlabs/hardhat-zksync-solc");
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-solc";
 
-// changes endpoint depending on environment variable
-const zkSyncDeploy =
+// dynamically changes endpoints for local tests
+const zkSyncTestnet =
   process.env.NODE_ENV == "test"
     ? {
-        zkSyncNetwork: "http://localhost:3050",
+        url: "http://localhost:3050",
         ethNetwork: "http://localhost:8545",
+        zksync: true,
       }
     : {
-        zkSyncNetwork: "https://zksync2-testnet.zksync.dev",
+        url: "https://zksync2-testnet.zksync.dev",
         ethNetwork: "goerli",
+        zksync: true,
       };
 
 module.exports = {
   zksolc: {
-    version: "1.2.0",
+    version: "1.2.2",
     compilerSource: "binary",
-    settings: {
-      experimental: {
-        dockerImage: "matterlabs/zksolc",
-        tag: "v1.2.0",
-      },
-    },
+    settings: {},
   },
-  // load endpoints
-  zkSyncDeploy,
-  solidity: {
-    version: "0.8.11",
-  },
+  // defaults to zkSync network
+  defaultNetwork: "zkSyncTestnet",
+
   networks: {
     hardhat: {
       zksync: true,
     },
+    // load test network details
+    zkSyncTestnet,
+  },
+  solidity: {
+    version: "0.8.16",
   },
 };
 ```
@@ -202,3 +205,7 @@ yarn test
 ## Full example
 
 The full example with tests can be found [here](https://github.com/matter-labs/tutorial-examples/tree/main/local-setup-testing)
+
+## Chai Matchers
+
+The zkSync team provides the [hardhat-zksync-chai-matchers](./plugins.md#hardhat-zksync-chai-matchers) plugin to make it easier to write and maintain tests for your projects, in addition to offering a local testing environment. This plugin includes a set of Chai matchers specifically designed for use with zkSync, which can help you write more comprehensive and understandable tests for your contracts. By using these matchers, you can ensure that your contracts are working as intended and reduce the likelihood of encountering bugs or other issues during development.
